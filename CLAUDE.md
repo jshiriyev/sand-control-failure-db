@@ -281,6 +281,41 @@ each test.
 - Wiring the static HTML form's Export buttons to actually `POST` to a live API instead
   of downloading a file.
 
+## Path to production
+
+Everything above is built and tested, but the system isn't ready to hold real
+company data yet. Remaining work, grouped by when it's needed:
+
+**Before onboarding a real company**
+- Admin/CLI path to create a real organization + API token (today only
+  `db/seed/dev_organizations.py`, which is dev-only).
+- Token revocation/rotation mechanism.
+- CORS configuration in `backend/app/main.py` (needed once the form is served
+  from a different origin than the API).
+- Decide and document a data-retention / confidentiality policy for shared,
+  multi-company well data.
+
+**Before deploying anywhere real**
+- Choose a production hosting target (currently undecided -- repo is
+  deployment-agnostic, see "Explicitly deferred" above).
+- TLS/HTTPS termination (reverse proxy or platform load balancer).
+- Secrets management beyond `.env` (e.g. a secrets manager, not plaintext env
+  vars).
+- Automated Postgres backups/snapshots + a documented restore procedure.
+- Structured logging / error tracking (e.g. Sentry) -- right now an
+  unhandled exception just vanishes into container stdout.
+- Uptime monitoring/alerting wired to `GET /health`.
+- Rate limiting on `POST /records`.
+- Tune SQLAlchemy connection pool sizing for concurrent load (`db/session.py`
+  currently uses defaults plus `pool_pre_ping`).
+
+**API maturity**
+- API versioning scheme (`/v1/...`).
+- Pagination/listing endpoint -- companies can currently only fetch a record
+  by id, not list their own.
+- Update/delete/correction path for submitted records (currently
+  append-only).
+
 ## Regenerating the form / schema
 
 ```
