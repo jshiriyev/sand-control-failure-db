@@ -1,0 +1,2734 @@
+{
+  "completion_interval::Completion::Cased Hole Details::Casing Size": {
+    "category": "Completion",
+    "db_columns": [
+      "casing_size"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Casing Size",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Cased Hole Details",
+    "table": "completion_interval",
+    "unit": "inch"
+  },
+  "completion_interval::Completion::Cased Hole Details::Charge Type": {
+    "category": "Completion",
+    "db_columns": [
+      "charge_type"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "DP",
+      "BH"
+    ],
+    "parameter": "Charge Type",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Cased Hole Details",
+    "table": "completion_interval",
+    "unit": ""
+  },
+  "completion_interval::Completion::Cased Hole Details::Gross Perf Length": {
+    "category": "Completion",
+    "db_columns": [
+      "gross_perf_length"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Gross Perf Length",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Cased Hole Details",
+    "table": "completion_interval",
+    "unit": "ft"
+  },
+  "completion_interval::Completion::Cased Hole Details::Net Perf Length": {
+    "category": "Completion",
+    "db_columns": [
+      "net_perf_length"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Net Perf Length",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Cased Hole Details",
+    "table": "completion_interval",
+    "unit": "ft"
+  },
+  "completion_interval::Completion::Cased Hole Details::OB / OB Magnitude": {
+    "category": "Completion",
+    "db_columns": [
+      "ob_ob_magnitude"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "OB / OB Magnitude",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Cased Hole Details",
+    "table": "completion_interval",
+    "unit": "psi"
+  },
+  "completion_interval::Completion::Cased Hole Details::Perforation Charge Casing Material": {
+    "category": "Completion",
+    "db_columns": [
+      "perforation_charge_casing_material"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "Steel",
+      "Low Debris Steel",
+      "Zinc"
+    ],
+    "parameter": "Perforation Charge Casing Material",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Cased Hole Details",
+    "table": "completion_interval",
+    "unit": ""
+  },
+  "completion_interval::Completion::Cased Hole Details::Perforation Gun Size": {
+    "category": "Completion",
+    "db_columns": [
+      "perforation_gun_size"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Perforation Gun Size",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Cased Hole Details",
+    "table": "completion_interval",
+    "unit": "inches"
+  },
+  "completion_interval::Completion::Cased Hole Details::Perforation SPF": {
+    "category": "Completion",
+    "db_columns": [
+      "perforation_spf"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Perforation SPF",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Cased Hole Details",
+    "table": "completion_interval",
+    "unit": "shots/ft"
+  },
+  "completion_interval::Completion::Cased Hole Details::Perforation Strategy": {
+    "category": "Completion",
+    "db_columns": [
+      "perforation_strategy"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "OB",
+      "UB",
+      "OB & Surge",
+      "UB & Surge"
+    ],
+    "parameter": "Perforation Strategy",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Cased Hole Details",
+    "table": "completion_interval",
+    "unit": ""
+  },
+  "completion_interval::Completion::Completion Details::Completion Type": {
+    "category": "Completion",
+    "db_columns": [
+      "completion_type"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "Open Hole",
+      "Cased Hole"
+    ],
+    "parameter": "Completion Type",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Completion Details",
+    "table": "completion_interval",
+    "unit": ""
+  },
+  "completion_interval::Completion::Completion Details::Sandface Completion Date": {
+    "category": "Completion",
+    "db_columns": [
+      "sandface_completion_date"
+    ],
+    "db_type": "Date",
+    "kind": "date",
+    "max_value": null,
+    "min_value": null,
+    "options": [],
+    "parameter": "Sandface Completion Date",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Completion Details",
+    "table": "completion_interval",
+    "unit": "YYYY-MM-DD"
+  },
+  "completion_interval::Completion::Gravel Packing::Carrier Fluid Density": {
+    "category": "Completion",
+    "db_columns": [
+      "carrier_fluid_density"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Carrier Fluid Density",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Gravel Packing",
+    "table": "completion_interval",
+    "unit": "ppg"
+  },
+  "completion_interval::Completion::Gravel Packing::Carrier Fluid Type": {
+    "category": "Completion",
+    "db_columns": [
+      "carrier_fluid_type"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "Brine",
+      "Crosslinked Gel",
+      "Foam-Based Fluid",
+      "Oil-Based Fluid",
+      "Other / Proprietary"
+    ],
+    "parameter": "Carrier Fluid Type",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Gravel Packing",
+    "table": "completion_interval",
+    "unit": ""
+  },
+  "completion_interval::Completion::Gravel Packing::Max Proppant Concentration": {
+    "category": "Completion",
+    "db_columns": [
+      "max_proppant_concentration"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Max Proppant Concentration",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Gravel Packing",
+    "table": "completion_interval",
+    "unit": "ppg"
+  },
+  "completion_interval::Completion::Gravel Packing::Max Pump Rate": {
+    "category": "Completion",
+    "db_columns": [
+      "max_pump_rate"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Max Pump Rate",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Gravel Packing",
+    "table": "completion_interval",
+    "unit": "stb/d or mmscf/d"
+  },
+  "completion_interval::Completion::Gravel Packing::Net Pressure Gain": {
+    "category": "Completion",
+    "db_columns": [
+      "net_pressure_gain"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Net Pressure Gain",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Gravel Packing",
+    "table": "completion_interval",
+    "unit": "psi"
+  },
+  "completion_interval::Completion::Gravel Packing::Pack Efficiency Source": {
+    "category": "Completion",
+    "db_columns": [
+      "pack_efficiency_source"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "Gravel Pack Evaluation Log",
+      "Pressure / Pumping Data",
+      "Volume Balance",
+      "Returns / Surface Monitoring",
+      "Post-Job Well Performance",
+      "Combination of Methods",
+      "Other",
+      "Unknown / Not Disclosed"
+    ],
+    "parameter": "Pack Efficiency Source",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Gravel Packing",
+    "table": "completion_interval",
+    "unit": ""
+  },
+  "completion_interval::Completion::Gravel Packing::Pack Efficiency Value": {
+    "category": "Completion",
+    "db_columns": [
+      "pack_efficiency_value"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Pack Efficiency Value",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Gravel Packing",
+    "table": "completion_interval",
+    "unit": "%"
+  },
+  "completion_interval::Completion::Gravel Packing::Placement Issues": {
+    "category": "Completion",
+    "db_columns": [
+      "placement_issues"
+    ],
+    "db_type": "Text",
+    "kind": "text",
+    "max_value": null,
+    "min_value": null,
+    "options": [],
+    "parameter": "Placement Issues",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Gravel Packing",
+    "table": "completion_interval",
+    "unit": ""
+  },
+  "completion_interval::Completion::Gravel Packing::Placement Method": {
+    "category": "Completion",
+    "db_columns": [
+      "placement_method"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "Shunt",
+      "Circ Pack"
+    ],
+    "parameter": "Placement Method",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Gravel Packing",
+    "table": "completion_interval",
+    "unit": ""
+  },
+  "completion_interval::Completion::Gravel Packing::Proppant / Unit Length": {
+    "category": "Completion",
+    "db_columns": [
+      "proppant_unit_length"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Proppant / Unit Length",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Gravel Packing",
+    "table": "completion_interval",
+    "unit": "ft"
+  },
+  "completion_interval::Completion::Gravel Packing::Proppant Size": {
+    "category": "Completion",
+    "db_columns": [
+      "proppant_size"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Proppant Size",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Gravel Packing",
+    "table": "completion_interval",
+    "unit": ""
+  },
+  "completion_interval::Completion::Gravel Packing::Proppant Type": {
+    "category": "Completion",
+    "db_columns": [
+      "proppant_type"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "Natural Sand",
+      "Resin-Coated Sand",
+      "Ceramic Proppant"
+    ],
+    "parameter": "Proppant Type",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Gravel Packing",
+    "table": "completion_interval",
+    "unit": ""
+  },
+  "completion_interval::Completion::Gravel Packing::Return Percentage": {
+    "category": "Completion",
+    "db_columns": [
+      "return_percentage"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Return Percentage",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Gravel Packing",
+    "table": "completion_interval",
+    "unit": "%"
+  },
+  "completion_interval::Completion::Liners and Screens::Filter cake breaker placement": {
+    "category": "Completion",
+    "db_columns": [
+      "filter_cake_breaker_placement"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "Spotted inside screens",
+      "Displaced outside screens",
+      "Not used"
+    ],
+    "parameter": "Filter cake breaker placement",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Liners and Screens",
+    "table": "completion_interval",
+    "unit": ""
+  },
+  "completion_interval::Completion::Liners and Screens::ICD / AICD": {
+    "category": "Completion",
+    "db_columns": [
+      "icd_aicd"
+    ],
+    "db_type": "Boolean",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "parameter": "ICD / AICD",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Liners and Screens",
+    "table": "completion_interval",
+    "unit": ""
+  },
+  "completion_interval::Completion::Liners and Screens::If screens ran in mud, was mud removed once screens on bottom?": {
+    "category": "Completion",
+    "db_columns": [
+      "if_screens_ran_in_mud_was_mud_removed_once_screens_on_bottom"
+    ],
+    "db_type": "Boolean",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "parameter": "If screens ran in mud, was mud removed once screens on bottom?",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Liners and Screens",
+    "table": "completion_interval",
+    "unit": ""
+  },
+  "completion_interval::Completion::Liners and Screens::Screen Base Pipe Size": {
+    "category": "Completion",
+    "db_columns": [
+      "screen_base_pipe_size"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Screen Base Pipe Size",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Liners and Screens",
+    "table": "completion_interval",
+    "unit": "inch"
+  },
+  "completion_interval::Completion::Liners and Screens::Screen Gauge": {
+    "category": "Completion",
+    "db_columns": [
+      "screen_gauge"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Screen Gauge",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Liners and Screens",
+    "table": "completion_interval",
+    "unit": "gauge or micron"
+  },
+  "completion_interval::Completion::Liners and Screens::Screen RIH Fluid Type": {
+    "category": "Completion",
+    "db_columns": [
+      "screen_rih_fluid_type"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "Brine",
+      "OBM",
+      "Brine in Casing & Mud in OH"
+    ],
+    "parameter": "Screen RIH Fluid Type",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Liners and Screens",
+    "table": "completion_interval",
+    "unit": ""
+  },
+  "completion_interval::Completion::Liners and Screens::Screen Type": {
+    "category": "Completion",
+    "db_columns": [
+      "screen_type"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "Plain Slotted Liners",
+      "Wire-Wrapped Screens (WWS)",
+      "Premium Mesh Screen",
+      "Prepacked Screens",
+      "Metal-Fiber / Wool Screen",
+      "Ceramic Screen",
+      "Other Erosion Resistant Screen",
+      "Other"
+    ],
+    "parameter": "Screen Type",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Liners and Screens",
+    "table": "completion_interval",
+    "unit": ""
+  },
+  "completion_interval::Completion::Open Hole Details::Fluid Type Left in OH at end of Completion": {
+    "category": "Completion",
+    "db_columns": [
+      "fluid_type_left_in_oh_at_end_of_completion"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "Completion Brine",
+      "Reservoir Drill-In Fluid",
+      "Filter-Cake Breaker Fluid",
+      "Produced Fluid / Hydrocarbon",
+      "Mixed / Contaminated Fluid"
+    ],
+    "parameter": "Fluid Type Left in OH at end of Completion",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Open Hole Details",
+    "table": "completion_interval",
+    "unit": ""
+  },
+  "completion_interval::Completion::Open Hole Details::Gross Open Hole Length": {
+    "category": "Completion",
+    "db_columns": [
+      "gross_open_hole_length"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Gross Open Hole Length",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Open Hole Details",
+    "table": "completion_interval",
+    "unit": "ft"
+  },
+  "completion_interval::Completion::Open Hole Details::Hole Size": {
+    "category": "Completion",
+    "db_columns": [
+      "hole_size"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Hole Size",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Open Hole Details",
+    "table": "completion_interval",
+    "unit": "inch"
+  },
+  "completion_interval::Completion::Open Hole Details::Net Pay Length": {
+    "category": "Completion",
+    "db_columns": [
+      "net_pay_length"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Net Pay Length",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Open Hole Details",
+    "table": "completion_interval",
+    "unit": "ft"
+  },
+  "completion_interval::Completion::Sand Control Details::Cased Hole Sand Control Selected Method": {
+    "category": "Completion",
+    "db_columns": [
+      "cased_hole_sand_control_selected_method"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "CHFP",
+      "CHGP",
+      "Cased and Perforated"
+    ],
+    "parameter": "Cased Hole Sand Control Selected Method",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Sand Control Details",
+    "table": "completion_interval",
+    "unit": ""
+  },
+  "completion_interval::Completion::Sand Control Details::Open Hole Sand Control Selected Method": {
+    "category": "Completion",
+    "db_columns": [
+      "open_hole_sand_control_selected_method"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "OHGP",
+      "SAS"
+    ],
+    "parameter": "Open Hole Sand Control Selected Method",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Sand Control Details",
+    "table": "completion_interval",
+    "unit": ""
+  },
+  "completion_interval::Completion::Sand Control Details::Sand Control Decision Justification": {
+    "category": "Completion",
+    "db_columns": [
+      "sand_control_decision_justification"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "Uncertain Sand Risk / Conservative Design",
+      "Offset Well Experience",
+      "Core-Based Geomechanical Analysis",
+      "Operational Constraint",
+      "Regulatory Requirement",
+      "Completion Type Standardization",
+      "Unknown / Not Documented"
+    ],
+    "parameter": "Sand Control Decision Justification",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Sand Control Details",
+    "table": "completion_interval",
+    "unit": ""
+  },
+  "completion_interval::Drilling::Drilling Details::Additional Bridging Agent": {
+    "category": "Drilling",
+    "db_columns": [
+      "additional_bridging_agent"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "CaCO3",
+      "None"
+    ],
+    "parameter": "Additional Bridging Agent",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Drilling Details",
+    "table": "completion_interval",
+    "unit": ""
+  },
+  "completion_interval::Drilling::Drilling Details::Drill Bit Size": {
+    "category": "Drilling",
+    "db_columns": [
+      "drill_bit_size"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Drill Bit Size",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Drilling Details",
+    "table": "completion_interval",
+    "unit": ""
+  },
+  "completion_interval::Drilling::Drilling Details::Mud PSD": {
+    "category": "Drilling",
+    "db_columns": [
+      "mud_psd_d10",
+      "mud_psd_d50",
+      "mud_psd_d90"
+    ],
+    "db_type": "Numeric",
+    "kind": "multi_number",
+    "max_value": null,
+    "min_value": null,
+    "options": [],
+    "parameter": "Mud PSD",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Drilling Details",
+    "table": "completion_interval",
+    "unit": "D10 / D50 / D90"
+  },
+  "completion_interval::Drilling::Drilling Details::PSD Test Volume": {
+    "category": "Drilling",
+    "db_columns": [
+      "psd_test_volume"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "PSD Test Volume",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Drilling Details",
+    "table": "completion_interval",
+    "unit": "L"
+  },
+  "completion_interval::Drilling::Drilling Details::Reservoir Drilling Fluid Density": {
+    "category": "Drilling",
+    "db_columns": [
+      "reservoir_drilling_fluid_density"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Reservoir Drilling Fluid Density",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Drilling Details",
+    "table": "completion_interval",
+    "unit": "ppg"
+  },
+  "completion_interval::Drilling::Drilling Details::Reservoir Drilling Fluid Type": {
+    "category": "Drilling",
+    "db_columns": [
+      "reservoir_drilling_fluid_type"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "OBM",
+      "WBM",
+      "OBM Acid Soluble",
+      "WBM Acid Soluble"
+    ],
+    "parameter": "Reservoir Drilling Fluid Type",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Drilling Details",
+    "table": "completion_interval",
+    "unit": ""
+  },
+  "completion_interval::Drilling::Drilling Details::Weighting Agent": {
+    "category": "Drilling",
+    "db_columns": [
+      "weighting_agent"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "API Barite",
+      "UFG Barite",
+      "Calcium Carbonate",
+      "Hematite",
+      "None"
+    ],
+    "parameter": "Weighting Agent",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Drilling Details",
+    "table": "completion_interval",
+    "unit": ""
+  },
+  "completion_interval::Pre-production and cleanup::Pre-production and cleanup details::Percentage of ideal PI or skin achieved": {
+    "category": "Pre-production and cleanup",
+    "db_columns": [
+      "percentage_of_ideal_pi_or_skin_achieved"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": null,
+    "options": [],
+    "parameter": "Percentage of ideal PI or skin achieved",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Pre-production and cleanup details",
+    "table": "completion_interval",
+    "unit": "%"
+  },
+  "completion_interval::Pre-production and cleanup::Pre-production and cleanup details::Remedial Acid Helped Productivity": {
+    "category": "Pre-production and cleanup",
+    "db_columns": [
+      "remedial_acid_helped_productivity"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "Yes",
+      "No",
+      "Partially",
+      "Unknown",
+      "Not Applicable"
+    ],
+    "parameter": "Remedial Acid Helped Productivity",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Pre-production and cleanup details",
+    "table": "completion_interval",
+    "unit": ""
+  },
+  "completion_interval::Pre-production and cleanup::Pre-production and cleanup details::Remedial Acid Pumped as Productivity was Below Expectation": {
+    "category": "Pre-production and cleanup",
+    "db_columns": [
+      "remedial_acid_pumped_as_productivity_was_below_expectation"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "Yes",
+      "No",
+      "Unknown",
+      "Not Applicable"
+    ],
+    "parameter": "Remedial Acid Pumped as Productivity was Below Expectation",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Pre-production and cleanup details",
+    "table": "completion_interval",
+    "unit": ""
+  },
+  "completion_interval::Pre-production and cleanup::Pre-production and cleanup details::Remedial Acid Type": {
+    "category": "Pre-production and cleanup",
+    "db_columns": [
+      "remedial_acid_type"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "Organic",
+      "Inorganic",
+      "Mud acid",
+      "Blend",
+      "Other",
+      "Unknown",
+      "Not applicable"
+    ],
+    "parameter": "Remedial Acid Type",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Pre-production and cleanup details",
+    "table": "completion_interval",
+    "unit": ""
+  },
+  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Core Derived Min Rock UCS": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "core_derived_min_rock_ucs"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Core Derived Min Rock UCS",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "completion_interval",
+    "unit": "psi"
+  },
+  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Core Derived P50 Rock UCS": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "core_derived_p50_rock_ucs"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Core Derived P50 Rock UCS",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "completion_interval",
+    "unit": "psi"
+  },
+  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Fines Content": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "fines_content"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Fines Content",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "completion_interval",
+    "unit": "%"
+  },
+  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Fluid Type": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "fluid_type"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "Oil",
+      "Condensate",
+      "Wet Gas",
+      "Dry Gas"
+    ],
+    "parameter": "Fluid Type",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "completion_interval",
+    "unit": ""
+  },
+  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Frac gradient": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "frac_gradient"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Frac gradient",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "completion_interval",
+    "unit": "ppg"
+  },
+  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Initial PI": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "initial_pi"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Initial PI",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "completion_interval",
+    "unit": "stb/d/psi or mmscf/d/psi"
+  },
+  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Initial Total Skin from PTA": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "initial_total_skin_from_pta"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": null,
+    "options": [],
+    "parameter": "Initial Total Skin from PTA",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "completion_interval",
+    "unit": ""
+  },
+  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Oil Bubble Point (Pb)": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "oil_bubble_point_pb"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Oil Bubble Point (Pb)",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "completion_interval",
+    "unit": "psi"
+  },
+  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Oil Formation Volume Factor (Bo) at downhole conditions": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "oil_formation_volume_factor_bo_at_downhole_conditions"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Oil Formation Volume Factor (Bo) at downhole conditions",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "completion_interval",
+    "unit": ""
+  },
+  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::PSD Measurement Method": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "psd_measurement_method"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "LPSA",
+      "Sieve"
+    ],
+    "parameter": "PSD Measurement Method",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "completion_interval",
+    "unit": ""
+  },
+  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Particle Size Distribution D10/D25/D40/D50/D75/D90": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "particle_size_distribution_d10",
+      "particle_size_distribution_d25",
+      "particle_size_distribution_d40",
+      "particle_size_distribution_d50",
+      "particle_size_distribution_d75",
+      "particle_size_distribution_d90"
+    ],
+    "db_type": "Numeric",
+    "kind": "multi_number",
+    "max_value": null,
+    "min_value": null,
+    "options": [],
+    "parameter": "Particle Size Distribution D10/D25/D40/D50/D75/D90",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "completion_interval",
+    "unit": "microns"
+  },
+  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Permeability": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "permeability"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Permeability",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "completion_interval",
+    "unit": "md"
+  },
+  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Porosity": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "porosity"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Porosity",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "completion_interval",
+    "unit": "%"
+  },
+  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Producing Fluid Viscosity": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "producing_fluid_viscosity"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Producing Fluid Viscosity",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "completion_interval",
+    "unit": "cP"
+  },
+  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Reservoir Pressure at Time of Completion": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "reservoir_pressure_at_time_of_completion"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Reservoir Pressure at Time of Completion",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "completion_interval",
+    "unit": "psi"
+  },
+  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Reservoir Temperature": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "reservoir_temperature"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Reservoir Temperature",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "completion_interval",
+    "unit": "degF"
+  },
+  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Reservoir pressure at first sand production": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "reservoir_pressure_at_first_sand_production"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Reservoir pressure at first sand production",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "completion_interval",
+    "unit": "psi"
+  },
+  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Rock compressibility at first sand production": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "rock_compressibility_at_first_sand_production"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Rock compressibility at first sand production",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "completion_interval",
+    "unit": "microsips"
+  },
+  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Rock compressibility at initial reservoir pressure": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "rock_compressibility_at_initial_reservoir_pressure"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Rock compressibility at initial reservoir pressure",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "completion_interval",
+    "unit": "microsips"
+  },
+  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Shale Reactivity CEC": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "shale_reactivity_cec"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Shale Reactivity CEC",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "completion_interval",
+    "unit": ""
+  },
+  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Solution Gas Ratio (Rs)": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "solution_gas_ratio_rs"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Solution Gas Ratio (Rs)",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "completion_interval",
+    "unit": "scf/stb"
+  },
+  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Source of sand sample": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "source_of_sand_sample"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "cores",
+      "bottom-hole sand sample",
+      "surface sample",
+      "analog well"
+    ],
+    "parameter": "Source of sand sample",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "completion_interval",
+    "unit": ""
+  },
+  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Virgin Reservoir Pressure": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "virgin_reservoir_pressure"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Virgin Reservoir Pressure",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "completion_interval",
+    "unit": "psi"
+  },
+  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::k.h from Log": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "k_h_from_log"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "k.h from Log",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "completion_interval",
+    "unit": "md-ft"
+  },
+  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::k.h from PTA": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "k_h_from_pta"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "k.h from PTA",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "completion_interval",
+    "unit": "md-ft"
+  },
+  "completion_interval::Wellbore::Wellbore properties::Completion Interval Length": {
+    "category": "Wellbore",
+    "db_columns": [
+      "completion_interval_length"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Completion Interval Length",
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Wellbore properties",
+    "table": "completion_interval",
+    "unit": ""
+  },
+  "production_interval::Completion Interval Details::Completion Intervals::Number of Completion Intervals": {
+    "category": "Completion Interval Details",
+    "db_columns": [
+      "number_of_completion_intervals"
+    ],
+    "db_type": "Integer",
+    "kind": "number",
+    "max_value": 10,
+    "min_value": 1,
+    "options": [],
+    "parameter": "Number of Completion Intervals",
+    "required": false,
+    "scope": "production_interval",
+    "step": 1,
+    "subcategory": "Completion Intervals",
+    "table": "production_interval",
+    "unit": ""
+  },
+  "well::General Information::Data Origin & Disclosure::Data confidence level": {
+    "category": "General Information",
+    "db_columns": [
+      "data_confidence_level"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "High",
+      "Mid",
+      "Low"
+    ],
+    "parameter": "Data confidence level",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Data Origin & Disclosure",
+    "table": "well",
+    "unit": ""
+  },
+  "well::General Information::Data Origin & Disclosure::Data source": {
+    "category": "General Information",
+    "db_columns": [
+      "data_source"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "Operator",
+      "Service Company",
+      "Report",
+      "SPE Paper",
+      "Public Data"
+    ],
+    "parameter": "Data source",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Data Origin & Disclosure",
+    "table": "well",
+    "unit": ""
+  },
+  "well::General Information::Data Origin & Disclosure::Disclosure level": {
+    "category": "General Information",
+    "db_columns": [
+      "disclosure_level"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "Internal Use Only",
+      "Anonymous External Use",
+      "Aggregated Analysis Only",
+      "Approved for Direct Disclosure",
+      "Not Disclosed"
+    ],
+    "parameter": "Disclosure level",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Data Origin & Disclosure",
+    "table": "well",
+    "unit": ""
+  },
+  "well::General Information::Data Origin & Disclosure::Notes / comments": {
+    "category": "General Information",
+    "db_columns": [
+      "notes_comments"
+    ],
+    "db_type": "Text",
+    "kind": "text",
+    "max_value": null,
+    "min_value": null,
+    "options": [],
+    "parameter": "Notes / comments",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Data Origin & Disclosure",
+    "table": "well",
+    "unit": ""
+  },
+  "well::Production Zone Details::Production Zones::Number of production intervals": {
+    "category": "Production Zone Details",
+    "db_columns": [
+      "number_of_production_intervals"
+    ],
+    "db_type": "Integer",
+    "kind": "number",
+    "max_value": 10,
+    "min_value": 1,
+    "options": [],
+    "parameter": "Number of production intervals",
+    "required": false,
+    "scope": "well",
+    "step": 1,
+    "subcategory": "Production Zones",
+    "table": "well",
+    "unit": ""
+  },
+  "well::Well Specific::Failure Confirmation::Sand failure": {
+    "category": "Well Specific",
+    "db_columns": [
+      "sand_failure"
+    ],
+    "db_type": "Boolean",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "parameter": "Sand failure",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Failure Confirmation",
+    "table": "well",
+    "unit": ""
+  },
+  "well::Well Specific::Failure Details & Performance Impact::Deviated well skin after choke-back": {
+    "category": "Well Specific",
+    "db_columns": [
+      "deviated_well_skin_after_choke_back"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": null,
+    "options": [],
+    "parameter": "Deviated well skin after choke-back",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Failure Details & Performance Impact",
+    "table": "well",
+    "unit": ""
+  },
+  "well::Well Specific::Failure Details & Performance Impact::How is sand production known?": {
+    "category": "Well Specific",
+    "db_columns": [
+      "how_is_sand_production_known"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "Surface Solids Samples",
+      "ASD Response",
+      "Surface Equipment Erosion"
+    ],
+    "parameter": "How is sand production known?",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Failure Details & Performance Impact",
+    "table": "well",
+    "unit": ""
+  },
+  "well::Well Specific::Failure Details & Performance Impact::Initial PI": {
+    "category": "Well Specific",
+    "db_columns": [
+      "initial_pi"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Initial PI",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Failure Details & Performance Impact",
+    "table": "well",
+    "unit": "stb/d/psi or mmscf/d/psi"
+  },
+  "well::Well Specific::Failure Details & Performance Impact::Initial deviated well skin": {
+    "category": "Well Specific",
+    "db_columns": [
+      "initial_deviated_well_skin"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": null,
+    "options": [],
+    "parameter": "Initial deviated well skin",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Failure Details & Performance Impact",
+    "table": "well",
+    "unit": ""
+  },
+  "well::Well Specific::Failure Details & Performance Impact::Initial non-Darcy skin": {
+    "category": "Well Specific",
+    "db_columns": [
+      "initial_non_darcy_skin"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": null,
+    "options": [],
+    "parameter": "Initial non-Darcy skin",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Failure Details & Performance Impact",
+    "table": "well",
+    "unit": ""
+  },
+  "well::Well Specific::Failure Details & Performance Impact::Initial total skin": {
+    "category": "Well Specific",
+    "db_columns": [
+      "initial_total_skin"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": null,
+    "options": [],
+    "parameter": "Initial total skin",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Failure Details & Performance Impact",
+    "table": "well",
+    "unit": ""
+  },
+  "well::Well Specific::Failure Details & Performance Impact::Lessons learned classification / RCFA outcomes": {
+    "category": "Well Specific",
+    "db_columns": [
+      "lessons_learned_classification_rcfa_outcomes"
+    ],
+    "db_type": "Text",
+    "kind": "text",
+    "max_value": null,
+    "min_value": null,
+    "options": [],
+    "parameter": "Lessons learned classification / RCFA outcomes",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Failure Details & Performance Impact",
+    "table": "well",
+    "unit": ""
+  },
+  "well::Well Specific::Failure Details & Performance Impact::Non-Darcy skin after choke-back": {
+    "category": "Well Specific",
+    "db_columns": [
+      "non_darcy_skin_after_choke_back"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": null,
+    "options": [],
+    "parameter": "Non-Darcy skin after choke-back",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Failure Details & Performance Impact",
+    "table": "well",
+    "unit": ""
+  },
+  "well::Well Specific::Failure Details & Performance Impact::Sand failure mechanism": {
+    "category": "Well Specific",
+    "db_columns": [
+      "sand_failure_mechanism"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "Aggressive drawdown",
+      "Screen plugging",
+      "Water breakthrough",
+      "Water hammer",
+      "Hard shutdown",
+      "Other",
+      "Unknown"
+    ],
+    "parameter": "Sand failure mechanism",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Failure Details & Performance Impact",
+    "table": "well",
+    "unit": ""
+  },
+  "well::Well Specific::Failure Details & Performance Impact::Sand production rate at complete well failure": {
+    "category": "Well Specific",
+    "db_columns": [
+      "sand_production_rate_at_complete_well_failure"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Sand production rate at complete well failure",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Failure Details & Performance Impact",
+    "table": "well",
+    "unit": "stb/d or mmscf/d"
+  },
+  "well::Well Specific::Failure Details & Performance Impact::Sand production rate at first choke back": {
+    "category": "Well Specific",
+    "db_columns": [
+      "sand_production_rate_at_first_choke_back"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Sand production rate at first choke back",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Failure Details & Performance Impact",
+    "table": "well",
+    "unit": "stb/d or mmscf/d"
+  },
+  "well::Well Specific::Failure Details & Performance Impact::Sand production rate at well shut-in due to sand": {
+    "category": "Well Specific",
+    "db_columns": [
+      "sand_production_rate_at_well_shut_in_due_to_sand"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Sand production rate at well shut-in due to sand",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Failure Details & Performance Impact",
+    "table": "well",
+    "unit": "stb/d or mmscf/d"
+  },
+  "well::Well Specific::Failure Details & Performance Impact::Severity of sand control failure": {
+    "category": "Well Specific",
+    "db_columns": [
+      "severity_of_sand_control_failure"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "Minor",
+      "Major",
+      "Catastrophic"
+    ],
+    "parameter": "Severity of sand control failure",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Failure Details & Performance Impact",
+    "table": "well",
+    "unit": ""
+  },
+  "well::Well Specific::Failure Details & Performance Impact::Severity of sand production": {
+    "category": "Well Specific",
+    "db_columns": [
+      "severity_of_sand_production"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "Minor (<10lb/hr)",
+      "Major (10 to 100 lb/hr)",
+      "Catastrophic (>100lb/hr)"
+    ],
+    "parameter": "Severity of sand production",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Failure Details & Performance Impact",
+    "table": "well",
+    "unit": ""
+  },
+  "well::Well Specific::Failure Details & Performance Impact::Time to complete well failure": {
+    "category": "Well Specific",
+    "db_columns": [
+      "time_to_complete_well_failure"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Time to complete well failure",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Failure Details & Performance Impact",
+    "table": "well",
+    "unit": "days"
+  },
+  "well::Well Specific::Failure Details & Performance Impact::Time to first choke back": {
+    "category": "Well Specific",
+    "db_columns": [
+      "time_to_first_choke_back"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Time to first choke back",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Failure Details & Performance Impact",
+    "table": "well",
+    "unit": "days"
+  },
+  "well::Well Specific::Failure Details & Performance Impact::Time to well shut-in due to sand": {
+    "category": "Well Specific",
+    "db_columns": [
+      "time_to_well_shut_in_due_to_sand"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Time to well shut-in due to sand",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Failure Details & Performance Impact",
+    "table": "well",
+    "unit": "days"
+  },
+  "well::Well Specific::Failure Details & Performance Impact::Total skin after choke-back": {
+    "category": "Well Specific",
+    "db_columns": [
+      "total_skin_after_choke_back"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": null,
+    "options": [],
+    "parameter": "Total skin after choke-back",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Failure Details & Performance Impact",
+    "table": "well",
+    "unit": ""
+  },
+  "well::Well Specific::Failure Details & Performance Impact::Well PI after choke-back": {
+    "category": "Well Specific",
+    "db_columns": [
+      "well_pi_after_choke_back"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Well PI after choke-back",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Failure Details & Performance Impact",
+    "table": "well",
+    "unit": "stb/d/psi or mmscf/d/psi"
+  },
+  "well::Well Specific::Production Performance History::Average sand rate": {
+    "category": "Well Specific",
+    "db_columns": [
+      "average_sand_rate"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Average sand rate",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Production Performance History",
+    "table": "well",
+    "unit": "pptb / lbs perf mmscf"
+  },
+  "well::Well Specific::Production Performance History::Current well status": {
+    "category": "Well Specific",
+    "db_columns": [
+      "current_well_status"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "Flowing Unrestricted by Sand",
+      "Flowing Restricted by Sand",
+      "Shut-in Due to Sand",
+      "Shut in due to reasons other than sand",
+      "Not Producing"
+    ],
+    "parameter": "Current well status",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Production Performance History",
+    "table": "well",
+    "unit": ""
+  },
+  "well::Well Specific::Production Performance History::First production date": {
+    "category": "Well Specific",
+    "db_columns": [
+      "first_production_date"
+    ],
+    "db_type": "Date",
+    "kind": "date",
+    "max_value": null,
+    "min_value": null,
+    "options": [],
+    "parameter": "First production date",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Production Performance History",
+    "table": "well",
+    "unit": "YYYY-MM-DD"
+  },
+  "well::Well Specific::Production Performance History::Gas Rate @ Shut-in": {
+    "category": "Well Specific",
+    "db_columns": [
+      "gas_rate_shut_in"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Gas Rate @ Shut-in",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Production Performance History",
+    "table": "well",
+    "unit": "mmscf/d"
+  },
+  "well::Well Specific::Production Performance History::Gas Rate @ The First Choke Back": {
+    "category": "Well Specific",
+    "db_columns": [
+      "gas_rate_the_first_choke_back"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Gas Rate @ The First Choke Back",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Production Performance History",
+    "table": "well",
+    "unit": "mmscf/d"
+  },
+  "well::Well Specific::Production Performance History::Initial reservoir pore pressure": {
+    "category": "Well Specific",
+    "db_columns": [
+      "initial_reservoir_pore_pressure"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Initial reservoir pore pressure",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Production Performance History",
+    "table": "well",
+    "unit": "psi"
+  },
+  "well::Well Specific::Production Performance History::Known sand face production chemistry issues": {
+    "category": "Well Specific",
+    "db_columns": [
+      "known_sand_face_production_chemistry_issues"
+    ],
+    "db_type": "Text",
+    "kind": "text",
+    "max_value": null,
+    "min_value": null,
+    "options": [],
+    "parameter": "Known sand face production chemistry issues",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Production Performance History",
+    "table": "well",
+    "unit": ""
+  },
+  "well::Well Specific::Production Performance History::Last production date": {
+    "category": "Well Specific",
+    "db_columns": [
+      "last_production_date"
+    ],
+    "db_type": "Date",
+    "kind": "date",
+    "max_value": null,
+    "min_value": null,
+    "options": [],
+    "parameter": "Last production date",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Production Performance History",
+    "table": "well",
+    "unit": "YYYY-MM-DD"
+  },
+  "well::Well Specific::Production Performance History::Max drawdown over well life": {
+    "category": "Well Specific",
+    "db_columns": [
+      "max_drawdown_over_well_life"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Max drawdown over well life",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Production Performance History",
+    "table": "well",
+    "unit": "psi"
+  },
+  "well::Well Specific::Production Performance History::Max sand rate": {
+    "category": "Well Specific",
+    "db_columns": [
+      "max_sand_rate"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Max sand rate",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Production Performance History",
+    "table": "well",
+    "unit": "pptb / lbs perf mmscf"
+  },
+  "well::Well Specific::Production Performance History::Oil Rate @ Shut-in": {
+    "category": "Well Specific",
+    "db_columns": [
+      "oil_rate_shut_in"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Oil Rate @ Shut-in",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Production Performance History",
+    "table": "well",
+    "unit": "stb/d"
+  },
+  "well::Well Specific::Production Performance History::Oil Rate @ The First Choke Back": {
+    "category": "Well Specific",
+    "db_columns": [
+      "oil_rate_the_first_choke_back"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Oil Rate @ The First Choke Back",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Production Performance History",
+    "table": "well",
+    "unit": "stb/d"
+  },
+  "well::Well Specific::Production Performance History::P50 drawdown over well life": {
+    "category": "Well Specific",
+    "db_columns": [
+      "p50_drawdown_over_well_life"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "P50 drawdown over well life",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Production Performance History",
+    "table": "well",
+    "unit": "psi"
+  },
+  "well::Well Specific::Production Performance History::Peak gas rate": {
+    "category": "Well Specific",
+    "db_columns": [
+      "peak_gas_rate"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Peak gas rate",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Production Performance History",
+    "table": "well",
+    "unit": "mmscf/d"
+  },
+  "well::Well Specific::Production Performance History::Peak oil rate": {
+    "category": "Well Specific",
+    "db_columns": [
+      "peak_oil_rate"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Peak oil rate",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Production Performance History",
+    "table": "well",
+    "unit": "stb/d"
+  },
+  "well::Well Specific::Production Performance History::Peak water cut": {
+    "category": "Well Specific",
+    "db_columns": [
+      "peak_water_cut"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Peak water cut",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Production Performance History",
+    "table": "well",
+    "unit": "%"
+  },
+  "well::Well Specific::Production Performance History::Peak water rate": {
+    "category": "Well Specific",
+    "db_columns": [
+      "peak_water_rate"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Peak water rate",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Production Performance History",
+    "table": "well",
+    "unit": "stb/d"
+  },
+  "well::Well Specific::Production Performance History::Post shut-in oil/gas production rate response": {
+    "category": "Well Specific",
+    "db_columns": [
+      "post_shut_in_oil_gas_production_rate_response"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "Same",
+      "Increased",
+      "Decreased",
+      "Variable",
+      "Unknown",
+      "Not applicable"
+    ],
+    "parameter": "Post shut-in oil/gas production rate response",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Production Performance History",
+    "table": "well",
+    "unit": ""
+  },
+  "well::Well Specific::Production Performance History::Post-shut-in sand response": {
+    "category": "Well Specific",
+    "db_columns": [
+      "post_shut_in_sand_response"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "Same",
+      "Increased",
+      "Decreased",
+      "Variable",
+      "Unknown",
+      "Not applicable"
+    ],
+    "parameter": "Post-shut-in sand response",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Production Performance History",
+    "table": "well",
+    "unit": ""
+  },
+  "well::Well Specific::Production Performance History::Post-shut-in water-cut response": {
+    "category": "Well Specific",
+    "db_columns": [
+      "post_shut_in_water_cut_response"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "Same",
+      "Increased",
+      "Decreased",
+      "Variable",
+      "Unknown",
+      "Not applicable"
+    ],
+    "parameter": "Post-shut-in water-cut response",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Production Performance History",
+    "table": "well",
+    "unit": ""
+  },
+  "well::Well Specific::Production Performance History::Sand rate quantification": {
+    "category": "Well Specific",
+    "db_columns": [
+      "sand_rate_quantification"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "Measurable",
+      "Unable to quantify",
+      "No sand"
+    ],
+    "parameter": "Sand rate quantification",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Production Performance History",
+    "table": "well",
+    "unit": ""
+  },
+  "well::Well Specific::Production Performance History::Typical post-shut-in bean-up strategy": {
+    "category": "Well Specific",
+    "db_columns": [
+      "typical_post_shut_in_bean_up_strategy"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "Gradual (\u2264 0.01 in/hr average increase in choke diameter)",
+      "Aggressive (> 0.01 in/hr, or a single increase \u2265 0.05 in within 1 hr)",
+      "Mixed (Both gradual and aggressive behavior occur during the evaluated period)",
+      "Unknown (Insufficient choke-size/time data)",
+      "Not applicable (No meaningful choke-management period exists)"
+    ],
+    "parameter": "Typical post-shut-in bean-up strategy",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Production Performance History",
+    "table": "well",
+    "unit": ""
+  },
+  "well::Well Specific::Production Performance History::Water Rate @ Shut-in": {
+    "category": "Well Specific",
+    "db_columns": [
+      "water_rate_shut_in"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Water Rate @ Shut-in",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Production Performance History",
+    "table": "well",
+    "unit": "stb/d"
+  },
+  "well::Well Specific::Production Performance History::Water Rate @ The First Choke Back": {
+    "category": "Well Specific",
+    "db_columns": [
+      "water_rate_the_first_choke_back"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Water Rate @ The First Choke Back",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Production Performance History",
+    "table": "well",
+    "unit": "stb/d"
+  },
+  "well::Well Specific::Production Performance History::Well start-up date": {
+    "category": "Well Specific",
+    "db_columns": [
+      "well_start_up_date"
+    ],
+    "db_type": "Date",
+    "kind": "date",
+    "max_value": null,
+    "min_value": null,
+    "options": [],
+    "parameter": "Well start-up date",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Production Performance History",
+    "table": "well",
+    "unit": "YYYY-MM-DD"
+  },
+  "well::Well Specific::Well & Field Identification::Field name": {
+    "category": "Well Specific",
+    "db_columns": [
+      "field_name"
+    ],
+    "db_type": "Text",
+    "kind": "text",
+    "max_value": null,
+    "min_value": null,
+    "options": [],
+    "parameter": "Field name",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Well & Field Identification",
+    "table": "well",
+    "unit": ""
+  },
+  "well::Well Specific::Well & Field Identification::Operating environment": {
+    "category": "Well Specific",
+    "db_columns": [
+      "operating_environment"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "Onshore",
+      "Shelf Offshore (< 3,000 ft)",
+      "Deepwater Offshore (3,000 - 6,000 ft)",
+      "Ultra-Deepwater Offshore (> 6,000 ft)",
+      "Unknown / Not Disclosed"
+    ],
+    "parameter": "Operating environment",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Well & Field Identification",
+    "table": "well",
+    "unit": ""
+  },
+  "well::Well Specific::Well & Field Identification::Operator name": {
+    "category": "Well Specific",
+    "db_columns": [
+      "operator_name"
+    ],
+    "db_type": "Text",
+    "kind": "text",
+    "max_value": null,
+    "min_value": null,
+    "options": [],
+    "parameter": "Operator name",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Well & Field Identification",
+    "table": "well",
+    "unit": ""
+  },
+  "well::Well Specific::Well & Field Identification::Operator type": {
+    "category": "Well Specific",
+    "db_columns": [
+      "operator_type"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "International Major / Supermajor",
+      "National Oil Company",
+      "Independent Operator",
+      "Small / Private Operator",
+      "Joint Venture Operator",
+      "Service Company / Integrated Project Operator",
+      "Other / Not Disclosed"
+    ],
+    "parameter": "Operator type",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Well & Field Identification",
+    "table": "well",
+    "unit": ""
+  },
+  "well::Well Specific::Well & Field Identification::Region": {
+    "category": "Well Specific",
+    "db_columns": [
+      "region"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "US Gulf Coast / Gulf Shelf",
+      "US Gulf / Deepwater",
+      "Central America",
+      "North Sea / Northeast Atlantic",
+      "West Africa Atlantic Margin",
+      "Brazil / South Atlantic Margin",
+      "Middle East / Arabian Gulf",
+      "Caspian / Central Asia",
+      "North Africa / Eastern Mediterranean",
+      "South & Southeast Asia",
+      "East Asia",
+      "Australasia",
+      "North America Onshore / Heavy Oil",
+      "Latin America Onshore",
+      "Latin America Offshore / Caribbean",
+      "Other / Not Disclosed"
+    ],
+    "parameter": "Region",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Well & Field Identification",
+    "table": "well",
+    "unit": ""
+  },
+  "well::Well Specific::Well & Field Identification::Tree type": {
+    "category": "Well Specific",
+    "db_columns": [
+      "tree_type"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "Wet Tree",
+      "Dry Tree"
+    ],
+    "parameter": "Tree type",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Well & Field Identification",
+    "table": "well",
+    "unit": ""
+  },
+  "well::Well Specific::Well & Field Identification::Water depth": {
+    "category": "Well Specific",
+    "db_columns": [
+      "water_depth"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Water depth",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Well & Field Identification",
+    "table": "well",
+    "unit": "ft"
+  },
+  "well::Well Specific::Well & Field Identification::Well TD, MD": {
+    "category": "Well Specific",
+    "db_columns": [
+      "well_td_md"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Well TD, MD",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Well & Field Identification",
+    "table": "well",
+    "unit": "ft"
+  },
+  "well::Well Specific::Well & Field Identification::Well TD, TVD (RKB)": {
+    "category": "Well Specific",
+    "db_columns": [
+      "well_td_tvd_rkb"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Well TD, TVD (RKB)",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Well & Field Identification",
+    "table": "well",
+    "unit": "ft"
+  },
+  "well::Well Specific::Well & Field Identification::Well identification number": {
+    "category": "Well Specific",
+    "db_columns": [
+      "well_identification_number"
+    ],
+    "db_type": "Integer",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Well identification number",
+    "required": true,
+    "scope": "well",
+    "step": 1,
+    "subcategory": "Well & Field Identification",
+    "table": "well",
+    "unit": ""
+  },
+  "well::Well Specific::Well & Field Identification::Well name": {
+    "category": "Well Specific",
+    "db_columns": [
+      "well_name"
+    ],
+    "db_type": "Text",
+    "kind": "text",
+    "max_value": null,
+    "min_value": null,
+    "options": [],
+    "parameter": "Well name",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Well & Field Identification",
+    "table": "well",
+    "unit": ""
+  },
+  "well::Well Specific::Well & Field Identification::Well type": {
+    "category": "Well Specific",
+    "db_columns": [
+      "well_type"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "Oil Producer",
+      "Gas Producer",
+      "Gas Condensate Producer"
+    ],
+    "parameter": "Well type",
+    "required": false,
+    "scope": "well",
+    "step": null,
+    "subcategory": "Well & Field Identification",
+    "table": "well",
+    "unit": ""
+  }
+}

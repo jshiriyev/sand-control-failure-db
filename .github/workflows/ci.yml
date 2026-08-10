@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: sand_control
+          POSTGRES_PASSWORD: sand_control
+          POSTGRES_DB: sand_control_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U sand_control"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql+psycopg://sand_control:sand_control@localhost:5432/sand_control_test
+      TEST_DATABASE_URL: postgresql+psycopg://sand_control:sand_control@localhost:5432/sand_control_test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install project (+ dev extras)
+        run: pip install -e ".[dev]"
+
+      - name: Codegen drift check (MASTER.xlsx -> db/generated + form)
+        run: |
+          python -m db.codegen
+          python form/generate_form.py
+          git diff --exit-code -- db/generated form/sand_control_form.html
+
+      - name: Lint
+        run: ruff check .
+
+      - name: Apply migrations
+        run: cd db && alembic upgrade head
+
+      - name: Run tests
+        run: pytest --cov=db --cov=backend --cov=dictionary --cov-report=term-missing

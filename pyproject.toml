@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sand-control-failure-db"
+version = "0.1.0"
+description = "Sand control failure data collection: dictionary-driven intake form, PostgreSQL schema, and FastAPI backend."
+requires-python = ">=3.12"
+dependencies = [
+    "openpyxl>=3.1",
+    "SQLAlchemy>=2.0",
+    "alembic>=1.13",
+    "psycopg[binary]>=3.1",
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.29",
+    "pydantic>=2.6",
+    "pydantic-settings>=2.2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "httpx>=0.27",
+    "ruff>=0.4",
+]
+
+[tool.setuptools.packages.find]
+include = ["dictionary*", "db*", "backend*"]
+exclude = ["tests*", "db.migrations*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+# Machine-generated -- regenerated wholesale by `python -m db.codegen`, never
+# hand-edited or hand-formatted, so general style linting doesn't apply.
+extend-exclude = ["db/generated"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["E402"]  # sys.path-then-import is used deliberately at several package entrypoints
+
+[tool.ruff.lint.per-file-ignores]
+# Long lines here are embedded CSS/JS/HTML template content, not Python code.
+"form/generate_form.py" = ["E501"]
