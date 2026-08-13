@@ -4,8 +4,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 WELL_SCOPE = "Well"
-PRODUCTION_SCOPE = "Production Interval {id}"
 COMPLETION_SCOPE = "Completion Interval {id}"
+SAND_BODY_SCOPE = "Sand Body {id}"
 
 
 @dataclass
@@ -32,3 +32,8 @@ class FieldSpec:
     step: float | None = None
     required: bool = False
     multi_labels: list[str] = field(default_factory=list)
+    # Parallel to multi_labels -- per-sub-value min/max pulled from that
+    # sub-value's own spec (each sub-value in a multi-number cell carries its
+    # own independent Data Validation spec, not just a shared "Number" type).
+    multi_min_values: list[float | None] = field(default_factory=list)
+    multi_max_values: list[float | None] = field(default_factory=list)

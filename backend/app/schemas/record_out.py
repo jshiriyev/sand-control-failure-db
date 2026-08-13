@@ -12,15 +12,15 @@ from pydantic import BaseModel
 Bucket = dict[str, dict[str, dict[str, Any]]]
 
 
+class SandBodyOut(BaseModel):
+    ordinal: int
+    fields: Bucket
+
+
 class CompletionIntervalOut(BaseModel):
     ordinal: int
     fields: Bucket
-
-
-class ProductionIntervalOut(BaseModel):
-    ordinal: int
-    fields: Bucket
-    completion_intervals: list[CompletionIntervalOut]
+    sand_bodies: list[SandBodyOut]
 
 
 class RecordOut(BaseModel):
@@ -29,4 +29,4 @@ class RecordOut(BaseModel):
     created_at: datetime
     submitted_at: datetime | None
     well: Bucket
-    production_intervals: list[ProductionIntervalOut]
+    completion_intervals: list[CompletionIntervalOut]

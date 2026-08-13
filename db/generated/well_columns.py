@@ -64,5 +64,5 @@ WELL_COLUMNS = [
     Column("post_shut_in_oil_gas_production_rate_response", Text, nullable=True, comment="Post shut-in oil/gas production rate response"),
     Column("post_shut_in_water_cut_response", Text, nullable=True, comment="Post-shut-in water-cut response"),
     Column("post_shut_in_sand_response", Text, nullable=True, comment="Post-shut-in sand response"),
-    Column("number_of_production_intervals", Integer, nullable=True, comment="Number of production intervals"),
+    Column("number_of_completion_intervals", Integer, nullable=True, comment="Number of Completion Intervals"),
 ]

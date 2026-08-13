@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from dictionary import COMPLETION_SCOPE, PRODUCTION_SCOPE, WELL_SCOPE, load_dictionary
+from dictionary import COMPLETION_SCOPE, SAND_BODY_SCOPE, WELL_SCOPE, load_dictionary
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 MASTER_XLSX = REPO_ROOT / "MASTER.xlsx"
@@ -26,7 +26,7 @@ def test_every_row_has_required_fields():
     rows = load_dictionary(MASTER_XLSX)
     for row in rows:
         assert row.parameter, f"blank Parameter (category={row.category!r})"
-        assert row.scope in (WELL_SCOPE, PRODUCTION_SCOPE, COMPLETION_SCOPE), (
+        assert row.scope in (WELL_SCOPE, COMPLETION_SCOPE, SAND_BODY_SCOPE), (
             f"unexpected Scope {row.scope!r} on parameter {row.parameter!r}"
         )
         assert row.category, f"blank Category on parameter {row.parameter!r}"

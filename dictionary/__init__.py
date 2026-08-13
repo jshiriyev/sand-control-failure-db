@@ -12,7 +12,7 @@ from dictionary.grouping import group_by_category_subcategory
 from dictionary.loader import SHEET_NAME, load_dictionary
 from dictionary.models import (
     COMPLETION_SCOPE,
-    PRODUCTION_SCOPE,
+    SAND_BODY_SCOPE,
     WELL_SCOPE,
     FieldSpec,
     ParamRow,
@@ -22,14 +22,14 @@ from dictionary.parsing import (
     parse_affected_cell,
     parse_dropdown_options,
     parse_multi_number,
-    parse_number_spec,
+    parse_validation_cell,
     safe_literal,
 )
 
 __all__ = [
     "COMPLETION_SCOPE",
     "MULTI_LABEL_SUFFIX_RE",
-    "PRODUCTION_SCOPE",
+    "SAND_BODY_SCOPE",
     "SHEET_NAME",
     "WELL_SCOPE",
     "FieldSpec",
@@ -40,6 +40,6 @@ __all__ = [
     "parse_affected_cell",
     "parse_dropdown_options",
     "parse_multi_number",
-    "parse_number_spec",
+    "parse_validation_cell",
     "safe_literal",
 ]

@@ -16,7 +16,7 @@ def _minimal_valid_payload() -> dict:
                 }
             }
         },
-        "production_intervals": [{"fields": {}, "completion_intervals": [{}]}],
+        "completion_intervals": [{"fields": {}, "sand_bodies": [{}]}],
     }
 
 
@@ -29,8 +29,8 @@ def test_fetch_round_trips_submitted_data(client, seeded_org):
     assert fetch_resp.status_code == 200
     body = fetch_resp.json()
     assert body["well"]["Well Specific"]["Well & Field Identification"]["Well name"] == "FETCH-TEST"
-    assert len(body["production_intervals"]) == 1
-    assert len(body["production_intervals"][0]["completion_intervals"]) == 1
+    assert len(body["completion_intervals"]) == 1
+    assert len(body["completion_intervals"][0]["sand_bodies"]) == 1
 
 
 def test_fetch_unknown_record_returns_404(client, seeded_org):

@@ -23,7 +23,7 @@ from db.naming import derive_column_names  # noqa: E402
 from db.type_mapping import sqla_type_for  # noqa: E402
 from dictionary import (  # noqa: E402
     COMPLETION_SCOPE,
-    PRODUCTION_SCOPE,
+    SAND_BODY_SCOPE,
     WELL_SCOPE,
     ParamRow,
     classify_field,
@@ -37,8 +37,8 @@ GENERATED_DIR = Path(__file__).resolve().parent / "generated"
 # (registry key prefix, Scope literal, generated module name, table name)
 SCOPES = [
     ("well", WELL_SCOPE, "well_columns", "well"),
-    ("production_interval", PRODUCTION_SCOPE, "production_interval_columns", "production_interval"),
     ("completion_interval", COMPLETION_SCOPE, "completion_interval_columns", "completion_interval"),
+    ("sand_body", SAND_BODY_SCOPE, "sand_body_columns", "sand_body"),
 ]
 
 

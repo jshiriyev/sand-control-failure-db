@@ -8,14 +8,14 @@ from typing import Any
 from sqlalchemy.orm import Session
 
 from backend.app.schemas.ingest import RecordIngest
-from backend.app.schemas.record_out import CompletionIntervalOut, ProductionIntervalOut, RecordOut
+from backend.app.schemas.record_out import CompletionIntervalOut, RecordOut, SandBodyOut
 from db.mapping import build_record_out, flatten_bucket
-from db.models import CompletionInterval, Organization, ProductionInterval, Well
+from db.models import CompletionInterval, Organization, SandBody, Well
 
 
 def create_record(db: Session, org: Organization, payload: RecordIngest) -> Well:
-    """One DB transaction: well -> its production_intervals -> their
-    completion_intervals, `ordinal` set to submission order at each level.
+    """One DB transaction: well -> its completion_intervals -> their
+    sand_bodies, `ordinal` set to submission order at each level.
     """
     well = Well(
         organization_id=org.id,
@@ -26,22 +26,22 @@ def create_record(db: Session, org: Organization, payload: RecordIngest) -> Well
     db.add(well)
     db.flush()  # assigns well.id for the FKs below
 
-    for prod_ordinal, prod_payload in enumerate(payload.production_intervals, start=1):
-        production_interval = ProductionInterval(
+    for comp_ordinal, comp_payload in enumerate(payload.completion_intervals, start=1):
+        completion_interval = CompletionInterval(
             well_id=well.id,
-            ordinal=prod_ordinal,
-            **flatten_bucket(prod_payload.fields, scope="production_interval"),
+            ordinal=comp_ordinal,
+            **flatten_bucket(comp_payload.fields, scope="completion_interval"),
         )
-        db.add(production_interval)
-        db.flush()  # assigns production_interval.id
+        db.add(completion_interval)
+        db.flush()  # assigns completion_interval.id
 
-        for comp_ordinal, comp_bucket in enumerate(prod_payload.completion_intervals, start=1):
-            completion_interval = CompletionInterval(
-                production_interval_id=production_interval.id,
-                ordinal=comp_ordinal,
-                **flatten_bucket(comp_bucket, scope="completion_interval"),
+        for sb_ordinal, sb_bucket in enumerate(comp_payload.sand_bodies, start=1):
+            sand_body = SandBody(
+                completion_interval_id=completion_interval.id,
+                ordinal=sb_ordinal,
+                **flatten_bucket(sb_bucket, scope="sand_body"),
             )
-            db.add(completion_interval)
+            db.add(sand_body)
 
     db.commit()
     db.refresh(well)
@@ -53,8 +53,8 @@ def get_well_owned_by(db: Session, record_id: int, organization_id: int) -> Well
 
 
 _WELL_STRUCTURAL_COLUMNS = {"id", "organization_id", "created_at", "updated_at", "submitted_at", "raw_payload"}
-_PRODUCTION_STRUCTURAL_COLUMNS = {"id", "well_id", "ordinal", "created_at", "updated_at"}
-_COMPLETION_STRUCTURAL_COLUMNS = {"id", "production_interval_id", "ordinal", "created_at", "updated_at"}
+_COMPLETION_STRUCTURAL_COLUMNS = {"id", "well_id", "ordinal", "created_at", "updated_at"}
+_SAND_BODY_STRUCTURAL_COLUMNS = {"id", "completion_interval_id", "ordinal", "created_at", "updated_at"}
 
 
 def _row_columns(row: Any, exclude: set[str]) -> dict[str, Any]:
@@ -66,20 +66,20 @@ def build_record_response(well: Well) -> RecordOut:
     nested Category -> Subcategory -> Parameter -> value shape the form
     exports, via db.mapping.build_record_out().
     """
-    production_intervals_out = []
-    for pi in well.production_intervals:
-        completion_intervals_out = [
+    completion_intervals_out = []
+    for ci in well.completion_intervals:
+        sand_bodies_out = [
+            SandBodyOut(
+                ordinal=sb.ordinal,
+                fields=build_record_out(_row_columns(sb, _SAND_BODY_STRUCTURAL_COLUMNS), scope="sand_body"),
+            )
+            for sb in ci.sand_bodies
+        ]
+        completion_intervals_out.append(
             CompletionIntervalOut(
                 ordinal=ci.ordinal,
                 fields=build_record_out(_row_columns(ci, _COMPLETION_STRUCTURAL_COLUMNS), scope="completion_interval"),
-            )
-            for ci in pi.completion_intervals
-        ]
-        production_intervals_out.append(
-            ProductionIntervalOut(
-                ordinal=pi.ordinal,
-                fields=build_record_out(_row_columns(pi, _PRODUCTION_STRUCTURAL_COLUMNS), scope="production_interval"),
-                completion_intervals=completion_intervals_out,
+                sand_bodies=sand_bodies_out,
             )
         )
     return RecordOut(
@@ -88,5 +88,5 @@ def build_record_response(well: Well) -> RecordOut:
         created_at=well.created_at,
         submitted_at=well.submitted_at,
         well=build_record_out(_row_columns(well, _WELL_STRUCTURAL_COLUMNS), scope="well"),
-        production_intervals=production_intervals_out,
+        completion_intervals=completion_intervals_out,
     )

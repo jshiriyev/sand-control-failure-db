@@ -58,7 +58,7 @@ curl -X POST http://localhost:8000/records \
         "well": {"Well Specific": {"Well & Field Identification": {
           "Well name": "TEST-1", "Well identification number": 1
         }}},
-        "production_intervals": [{"fields": {}, "completion_intervals": [{}]}]
+        "completion_intervals": [{"fields": {}, "sand_bodies": [{}]}]
       }'
 ```
 

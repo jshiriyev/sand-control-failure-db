@@ -47,7 +47,7 @@ Columns, in order:
 
 | Column | Meaning |
 |---|---|
-| `Scope` | `Well`, `Production Interval {id}`, or `Completion Interval {id}` -- see "Scope hierarchy" below |
+| `Scope` | `Well`, `Completion Interval {id}`, or `Sand Body {id}` -- see "Scope hierarchy" below |
 | `Category` | Top-level grouping (varies per scope -- e.g. `General Information`, `Well Specific`, `Drilling`, `Completion`, `Reservoir Characterization`) |
 | `Subcategory` | Second-level grouping within a Category |
 | `Parameter` | Field name, shown as the row label |
@@ -63,89 +63,104 @@ Columns, in order:
 
 ```
 Well  (rendered once per record)
- └── Production Interval {id}  (repeatable -- a well has 1+)
-      └── Completion Interval {id}  (repeatable -- a production interval has 1+ sand bodies)
+ └── Completion Interval {id}  (repeatable -- a well has 1+)
+      └── Sand Body {id}  (repeatable -- a completion interval has 1+ sand bodies)
 ```
 
-Current row distribution: `Well`=62, `Production Interval {id}`=1, `Completion Interval
-{id}`=75. The single Production-Interval-scope row is a counter ("Number of Completion
-Intervals") -- almost everything technical (Drilling, Completion, Sand Control,
-Pre-production/cleanup, Reservoir Characterization) lives at Completion Interval scope,
-meaning multiple completion intervals (sand bodies) within one production interval each
-get their own full set of drilling/completion/reservoir fields. This was a deliberate
-consolidation decision, not an oversight.
+Current row distribution: `Well`=62, `Completion Interval {id}`=47, `Sand Body {id}`=29.
+Drilling, Completion (incl. Sand Control equipment: Completion Type, Screen Type, Gravel
+Pack details, etc.) live at Completion Interval scope, meaning multiple Sand Bodies
+within one Completion Interval share a single drilling/completion/sand-control design
+record (one gravel pack can span multiple sand bodies) -- a deliberate consolidation
+decision, not an oversight. Pre-production/cleanup and Reservoir Characterization
+(rock/fluid properties) live at Sand Body scope, since those genuinely vary per sand
+body even when the equipment above them doesn't.
 
-Two Parameters are pure UI/record-keeping counters (`Number of production intervals` at
-Well scope, `Number of Completion Intervals` at Production Interval scope). They are
-**not** used to drive the form's repeaters or to enforce referential integrity anywhere
-downstream -- the real count is always however many child blocks/rows actually exist.
-The form does offer an "Apply" button next to each that grows the corresponding
-repeater to match a typed number (see "Form behavior" below), but shrinking or
-mismatches are never auto-corrected or rejected.
+Two Parameters are pure UI/record-keeping counters (`Number of Completion Intervals` at
+Well scope, `Number of sand bodies` at Completion Interval scope). They are **not** used
+to drive the form's repeaters or to enforce referential integrity anywhere downstream --
+the real count is always however many child blocks/rows actually exist. The form does
+offer an "Apply" button next to each that grows the corresponding repeater to match a
+typed number (see "Form behavior" below), but shrinking or mismatches are never
+auto-corrected or rejected.
 
 ### `Data Validation` / `Affected Subcategory` / `Affected Parameter` parsing
 
-Cells in these three columns are written as **Python-literal-safe text**, parsed with
-`ast.literal_eval` (see `dictionary/parsing.py`):
+Cells in these three columns are written as **Python-literal-safe text** (parsed with
+`ast.literal_eval`, tolerant of JSON's lowercase `true`/`false`/`null` too, since cells
+aren't strictly JSON), see `dictionary/parsing.py`. `Data Validation` and the two
+`Affected` columns use two unrelated DSLs within that shared parsing style:
 
-- Dropdown/Boolean options: `{"Operator", "Service Company", "Report"}` -- a set of
-  quoted strings. Since `ast.literal_eval` does not preserve set order, option lists are
-  actually extracted via an order-preserving regex instead (`parse_dropdown_options`),
-  not by trusting Python's set iteration.
-- Number constraints: `{"Positive Number"}` / `{"Number"}` (a bare, unconstrained value)
-  or `{"Positive Integer": {"min": 1, "max": 10}}` / `{"Positive Integer": {"required":
-  True}}` (a constraint-type mapped to modifiers -- `min`/`max`/`required`).
-- Short Date: `{"YYYY-MM-DD"}` -- informational only, not parsed into a format string.
-- Multi-number Text fields (sub-values in one cell): `{"Number / Number / Number"}`,
-  e.g. `Mud PSD`. Sub-field labels come from the `Unit` column if it's slash-delimited
-  and the count matches (`D10 / D50 / D90`); otherwise from a trailing slash-delimited
-  run in the Parameter name itself (`Particle Size Distribution
-  D10/D25/D40/D50/D75/D90`); otherwise generic `Value 1`, `Value 2`, ...
-- Conditional visibility (`Affected Subcategory`/`Affected Parameter`), placed on the
-  **triggering** row: `{"TriggerValue": {"Target1", "Target2"}}` -- a target listed as a
-  plain set member means **show on match** (the target starts hidden; this is the
-  original convention). `{"TriggerValue": {"Target": False}}` -- a target mapped to
-  `False` means **hide on match** (the target starts visible; the newer "exclude"
-  convention, e.g. `Operating environment = Onshore` hiding `Water depth`/`Tree type`).
-  Both can apply to the same target from different rules. Targets are generally scoped
-  to the triggering row's own `Category`, though a rule can deliberately cross category
-  boundaries within the same repeatable block (e.g. `Completion Type` revealing a
-  Parameter in a different Category after the `Sand Control` -> `Completion`
-  consolidation, see "Known open items").
+**`Data Validation`** -- modeled after Excel's own Data Validation dialog: a type name
+plus optional modifiers (`parse_validation_cell`):
 
-The parser is fully consistent on the current sheet -- every `Data Validation` /
-`Affected Subcategory` / `Affected Parameter` cell across all 138 rows parses cleanly
-via `ast.literal_eval` (verified; zero fallback/failure cases).
+- Bare, unconstrained: `{"Decimal"}`, `{"Whole number"}`, `{"Short Date"}`.
+- Type + modifiers: `{"Decimal": {"min": 0}}`, `{"Whole number": {"min": 1, "max": 10,
+  "required": True}}` -- a constraint-type mapped to modifiers (`min`/`max`/`required`).
+  `Whole number` maps to a DB `Integer` column (step=1); `Decimal` to `Numeric`.
+- Dropdown/Boolean options: `{"List": ["Operator", "Service Company", "Report"]}` -- a
+  genuine list literal, so option order is preserved directly by `ast.literal_eval` (no
+  order-preserving-regex workaround needed, unlike a set).
+- Text, unconstrained: `{"Any Value": {}}`.
+- Multi-number Text fields (sub-values in one cell), e.g. `Mud PSD`: one spec per
+  sub-value, each shaped like a normal Data Validation cell -- so sub-values can carry
+  independent types/constraints. The two multi-number cells on the current sheet write
+  this as `{["Decimal": {"min": 0}, "Decimal": {"min": 0}, "Decimal": {"min": 0}]}`,
+  which is not valid literal syntax on its own; `parse_validation_cell` recovers it
+  segment-by-segment. A cleanly-written `[{"Decimal": {"min": 0}}, ...]` list-of-specs
+  parses directly and is the preferred shape for any *new* multi-number cell. Either
+  way, sub-field labels come from the `Unit` column if it's slash-delimited and the
+  count matches (`D10 / D50 / D90`); otherwise from a trailing slash-delimited run in
+  the Parameter name itself (`Particle Size Distribution D10/D25/D40/D50/D75/D90`);
+  otherwise generic `Value 1`, `Value 2`, ... -- see "Known open items" for the two
+  current cells that fall back to the generic labels.
+
+**`Affected Subcategory` / `Affected Parameter`** -- an older, unchanged trigger ->
+target DSL, placed on the **triggering** row: `{"TriggerValue": {"Target1", "Target2"}}`
+-- a target listed as a plain set member means **show on match** (the target starts
+hidden; the original convention). `{"TriggerValue": {"Target": False}}` -- a target
+mapped to `False` means **hide on match** (the target starts visible; the newer
+"exclude" convention, e.g. `Operating environment = Onshore` hiding `Water
+depth`/`Tree type`). Both can apply to the same target from different rules. Targets are
+generally scoped to the triggering row's own `Category`, though a rule can deliberately
+cross category boundaries within the same repeatable block (e.g. `Completion Type`
+revealing a Parameter in a different Category after the `Sand Control` -> `Completion`
+consolidation, see "Known open items").
+
+The parser is fully consistent on the current sheet -- every `Affected Subcategory` /
+`Affected Parameter` cell, and 136 of 138 `Data Validation` cells, parse cleanly via
+plain `ast.literal_eval`; the remaining 2 (both multi-number Text cells) parse via the
+segment-recovery fallback described above. Zero cells fail outright.
 
 ## Form behavior (`form/generate_form.py` output)
 
 - `General Information`, `Well Specific`, and any other Well-scope Category render once
   at the top, each as a bordered "zone" with a colored header.
-- Production Intervals render as an independently repeatable block (default cap: 10,
-  `--max-production-intervals`). Each Production Interval block contains its own nested,
-  independently repeatable Completion Interval blocks (default cap: 10 per parent,
-  `--max-completion-intervals`) -- a genuine two-level nested repeater, each level
+- Completion Intervals render as an independently repeatable block (default cap: 10,
+  `--max-completion-intervals`). Each Completion Interval block contains its own nested,
+  independently repeatable Sand Body blocks (default cap: 10 per parent,
+  `--max-sand-bodies`) -- a genuine two-level nested repeater, each level
   numbering and coloring independently.
-- A "+ Apply" button next to each of the two counter fields (`Number of production
-  intervals`, `Number of Completion Intervals`) grows the corresponding repeater to
+- A "+ Apply" button next to each of the two counter fields (`Number of Completion
+  Intervals`, `Number of sand bodies`) grows the corresponding repeater to
   match a typed number; it only ever adds blocks, never removes them.
-- At least one Production Interval and, within it, at least one Completion Interval are
+- At least one Completion Interval and, within it, at least one Sand Body are
   always present -- their "Remove" buttons refuse to delete the last remaining one
   and show an alert instead.
 - Every field gets a "?" tooltip icon (hover/focus) sourced from the `Tooltip` column,
   and a red `*` marker for fields the dictionary marks `required`.
-- Category names are never shown as headings inside Production/Completion Interval
+- Category names are never shown as headings inside Completion Interval/Sand Body
   blocks (only Subcategory headings) -- matches the original Main Sheet convention.
 - Conditional visibility (`data-show-if`/`data-hide-if`) is evaluated per block
   instance, scoped to that instance's own DOM subtree, so cloned blocks behave
   independently.
 - **Export as JSON**: `{ generated_at, well: {Category: {Subcategory: {Parameter:
-  value}}}, production_intervals: [ { fields: {...}, completion_intervals: [{...}, ...]
+  value}}}, completion_intervals: [ { fields: {...}, sand_bodies: [{...}, ...]
   }, ... ] }`. This exact shape is also the backend's `POST /records` ingest payload
   shape (see below) -- wiring the form's export buttons to actually POST to a live API
   instead of downloading a file is a deliberate next step, not yet built.
-- **Export as CSV**: long format `Category, Subcategory, Parameter, Production
-  Interval, Completion Interval, Value, Unit` (interval-index columns blank for
+- **Export as CSV**: long format `Category, Subcategory, Parameter, Completion
+  Interval, Sand Body, Value, Unit` (interval-index columns blank for
   well-scope rows).
 - No backend calls from the static form today -- both exports are client-side (`Blob` +
   download link).
@@ -157,12 +172,12 @@ via `ast.literal_eval` (verified; zero fallback/failure cases).
 | Table column headers | `#203864` (white bold text) | -- |
 | `General Information` | `#FFD966` | `#FFF2CC` |
 | `Well Specific` | `#9DC3E6` | `#DEEBF7` |
-| Production Interval, odd instance | `#A9D18E` | `#E2F0D9` |
-| Production Interval, even instance | `#F4B183` | `#FBE5D6` |
-| Completion Interval, odd instance | `#B4A7D6` | `#EDE7F6` |
-| Completion Interval, even instance | `#EA9999` | `#FBE4E4` |
+| Completion Interval, odd instance | `#A9D18E` | `#E2F0D9` |
+| Completion Interval, even instance | `#F4B183` | `#FBE5D6` |
+| Sand Body, odd instance | `#B4A7D6` | `#EDE7F6` |
+| Sand Body, even instance | `#EA9999` | `#FBE4E4` |
 
-Numbering/coloring for Completion Interval blocks resets within each Production
+Numbering/coloring for Sand Body blocks resets within each Completion
 Interval parent (local, not global, odd/even). Banner/heading text is `#002060`
 (navy), bold. These values live in the `CSS` constant in `form/generate_form.py`.
 
@@ -178,12 +193,13 @@ ownership:
 - `well` -- structural/audit columns (`id`, `organization_id`, `created_at`,
   `updated_at`, `submitted_at`, `raw_payload` JSONB) + one column per Well-scope
   Parameter (62 currently).
-- `production_interval` -- `id`, `well_id` (FK, `ON DELETE CASCADE`), `ordinal`
+- `completion_interval` -- `id`, `well_id` (FK, `ON DELETE CASCADE`), `ordinal`
   (1-based submission order, **not** used for referential integrity), timestamps + the
-  1 Production-Interval-scope column. `UNIQUE(well_id, ordinal)`.
-- `completion_interval` -- same pattern, FK to `production_interval.id`, + the ~82
-  Completion-Interval-scope columns (75 rows; 2 multi-number rows expand into 3+6=9
-  columns). `UNIQUE(production_interval_id, ordinal)`.
+  ~49 Completion-Interval-scope columns (47 rows; 1 multi-number row expands into 3
+  columns). `UNIQUE(well_id, ordinal)`.
+- `sand_body` -- same pattern, FK to `completion_interval.id`, + the ~33 Sand-Body-scope
+  columns (29 rows; 1 multi-number row expands into 5 columns). `UNIQUE(completion_interval_id,
+  ordinal)`.
 
 Design decisions worth knowing before touching this:
 
@@ -210,7 +226,7 @@ each of the 3 scopes it slugifies each Parameter name into a column name
 Input Type to a SQLAlchemy type (`db/type_mapping.py`), and emits two kinds of
 committed, generated-not-hand-edited output:
 
-- `db/generated/{well,production_interval,completion_interval}_columns.py` -- plain
+- `db/generated/{well,completion_interval,sand_body}_columns.py` -- plain
   lists of `Column(...)` definitions, combined with a handful of structural columns in
   `db/models/*.py` via SQLAlchemy's imperative-`Table` + declarative-class pattern.
 - `db/generated/field_registry.json` -- one entry per dictionary row (keyed
@@ -228,20 +244,28 @@ head` --> run tests --> commit the `MASTER.xlsx` diff + regenerated files + migr
 together. CI re-runs the two regeneration commands and fails the build on any diff in
 the committed generated files (the "codegen drift check").
 
-The initial migration (`db/migrations/versions/..._initial_schema.py`) is the one
+The initial migration (`db/migrations/versions/..._initial_schema.py`) is one
 exception to "always use `--autogenerate`": it was authored without a live Postgres
 available and delegates to `Base.metadata.create_all()`/`drop_all()` instead of
 explicit `op.create_table()` calls, guaranteeing consistency with the models by
-construction. Every migration after it should go back to the normal
-`--autogenerate` workflow.
+construction. The second migration (`..._restructure_completion_interval_sand_body.py`,
+which replaced `production_interval`/`completion_interval` with
+`completion_interval`/`sand_body` when the scope hierarchy was renamed) is the other
+exception, for the same reason (no live Postgres to diff against) plus a second one:
+the change is a genuine restructuring -- both parent/child relationships and column
+sets changed -- not something `--autogenerate` could express as a rename even with a
+live database, so it explicitly drops the old-shape tables and creates the new-shape
+ones rather than attempting an in-place data migration (there's no production data yet
+to preserve -- see "Path to production"). Every migration after these two should go
+back to the normal `--autogenerate` workflow.
 
 ### Backend API (`backend/`)
 
 FastAPI, sync SQLAlchemy `Session` (not async -- simpler, more mature Alembic
 support). `Authorization: Bearer <token>` org auth (`backend/app/deps/auth.py`), hashed
 and compared against `organizations.api_token_hash`. Routes: `GET /health` (round-trips
-a real query), `POST /records` (submit -- one transaction: well -> its production
-intervals -> their completion intervals), `GET /records/{id}` (fetch, org-scoped). The
+a real query), `POST /records` (submit -- one transaction: well -> its completion
+intervals -> their sand bodies), `GET /records/{id}` (fetch, org-scoped). The
 ingest payload's shape is the same nested `Category -> Subcategory -> Parameter ->
 value` structure the form's own JSON export produces, modeled as generic nested dicts
 in `backend/app/schemas/ingest.py` rather than ~145 named fields, validated by
@@ -332,14 +356,21 @@ See the README for the full local-dev and Docker workflows.
 - **`Chemical Sand Consolidation`**: present as a Subcategory under `Sand Control` in
   the old long-format Data Dictionary (resin/chemical consolidation treatments), absent
   from the current `MasterView`. Confirm whether that was intentional.
-- **Modeling granularity**: all completion/sand-control equipment fields (Completion
-  Type, Screen Type, Gravel Pack details, etc.) live at Production Interval scope,
-  while only reservoir/fluid properties live at Completion Interval scope -- meaning
-  multiple Completion Intervals (sand bodies) within one Production Interval share a
-  single completion/sand-control design record. Confirmed intentional (one gravel pack
-  can span multiple sand bodies), documented here so it isn't mistaken for a bug later.
-- **Counter-field/repeater relationship**: `Number of production intervals` and `Number
-  of Completion Intervals` are informational only (see "Scope hierarchy" above) -- if a
+- **`Mud PSD` lost its D10/D50/D90 sub-labels**: its `Unit` cell is now blank (it used to
+  be the slash-delimited `D10 / D50 / D90` that drove sub-field labels) and its
+  Parameter name has no trailing slash-delimited suffix either, so its 3 sub-values now
+  render/store as generic `Value 1`/`Value 2`/`Value 3` (DB columns `mud_psd_value_1`,
+  `_value_2`, `_value_3`) instead of `mud_psd_d10`/`_d50`/`_d90`. Confirm whether the
+  blank `Unit` was intentional; if not, restoring `D10 / D50 / D90` in that cell will
+  restore the specific labels/column names next time the pipeline is regenerated.
+- **`Particle Size Distribution D10/D25/D40/D50/D75/D90`'s `Data Validation` cell has only
+  5 `"Decimal"` entries, not 6**: the Parameter name implies 6 sub-values, but the cell
+  (`{["Decimal": {"min": 0}, ...]}`, 5 repeats) only defines 5, so the count-must-match
+  guard falls back to generic `Value 1`..`Value 5` labels rather than guessing which of
+  the 6 D-labels to drop. Likely a missing 6th `"Decimal": {"min": 0}` entry -- confirm
+  and add it if so.
+- **Counter-field/repeater relationship**: `Number of Completion Intervals` and `Number
+  of sand bodies` are informational only (see "Scope hierarchy" above) -- if a
   stronger guarantee is ever wanted (e.g. rejecting a mismatch between the stated count
   and the actual submitted count), that would need explicit product/API design, not
   just a schema change.
@@ -351,4 +382,12 @@ inconsistency was resolved by moving to the Python-literal-safe DSL described ab
 (100% parseable); every row now has a `Tooltip`; trailing whitespace in Parameter names
 was cleaned up; the `Max Sand Rate`/`Average Sand Rate` casing mismatch in `Sand rate
 quantification`'s `Affected Parameter` rule was fixed; `Production Interval Length` was
-renamed to `Completion Interval Length` to match its actual scope.
+renamed to `Completion Interval Length` to match its actual scope. Most recently: the
+scope hierarchy was renamed from `Well -> Production Interval {id} -> Completion
+Interval {id}` to `Well -> Completion Interval {id} -> Sand Body {id}` (which also
+resolved the previous "Modeling granularity" naming-vs-reality mismatch noted here --
+the level holding equipment/design fields is now actually called "Completion Interval",
+and the level holding per-sand-body reservoir/cleanup fields is now actually called
+"Sand Body"), and `Data Validation` was redone from the `{"Positive Integer": {"min":
+1}}`-style DSL to the Excel-Data-Validation-flavored `{"Whole number": {"min": 1}}`
+style described above.

@@ -210,7 +210,7 @@
     "step": null,
     "subcategory": "Completion Details",
     "table": "completion_interval",
-    "unit": "YYYY-MM-DD"
+    "unit": ""
   },
   "completion_interval::Completion::Gravel Packing::Carrier Fluid Density": {
     "category": "Completion",
@@ -806,9 +806,9 @@
   "completion_interval::Drilling::Drilling Details::Mud PSD": {
     "category": "Drilling",
     "db_columns": [
-      "mud_psd_d10",
-      "mud_psd_d50",
-      "mud_psd_d90"
+      "mud_psd_value_1",
+      "mud_psd_value_2",
+      "mud_psd_value_3"
     ],
     "db_type": "Numeric",
     "kind": "multi_number",
@@ -821,7 +821,7 @@
     "step": null,
     "subcategory": "Drilling Details",
     "table": "completion_interval",
-    "unit": "D10 / D50 / D90"
+    "unit": ""
   },
   "completion_interval::Drilling::Drilling Details::PSD Test Volume": {
     "category": "Drilling",
@@ -906,564 +906,23 @@
     "table": "completion_interval",
     "unit": ""
   },
-  "completion_interval::Pre-production and cleanup::Pre-production and cleanup details::Percentage of ideal PI or skin achieved": {
-    "category": "Pre-production and cleanup",
+  "completion_interval::Sand Bodies::Sand Bodies::Number of sand bodies": {
+    "category": "Sand Bodies",
     "db_columns": [
-      "percentage_of_ideal_pi_or_skin_achieved"
+      "number_of_sand_bodies"
     ],
-    "db_type": "Numeric",
+    "db_type": "Integer",
     "kind": "number",
-    "max_value": null,
-    "min_value": null,
+    "max_value": 10,
+    "min_value": 1,
     "options": [],
-    "parameter": "Percentage of ideal PI or skin achieved",
+    "parameter": "Number of sand bodies",
     "required": false,
     "scope": "completion_interval",
-    "step": null,
-    "subcategory": "Pre-production and cleanup details",
-    "table": "completion_interval",
-    "unit": "%"
-  },
-  "completion_interval::Pre-production and cleanup::Pre-production and cleanup details::Remedial Acid Helped Productivity": {
-    "category": "Pre-production and cleanup",
-    "db_columns": [
-      "remedial_acid_helped_productivity"
-    ],
-    "db_type": "Text",
-    "kind": "select",
-    "max_value": null,
-    "min_value": null,
-    "options": [
-      "Yes",
-      "No",
-      "Partially",
-      "Unknown",
-      "Not Applicable"
-    ],
-    "parameter": "Remedial Acid Helped Productivity",
-    "required": false,
-    "scope": "completion_interval",
-    "step": null,
-    "subcategory": "Pre-production and cleanup details",
+    "step": 1,
+    "subcategory": "Sand Bodies",
     "table": "completion_interval",
     "unit": ""
-  },
-  "completion_interval::Pre-production and cleanup::Pre-production and cleanup details::Remedial Acid Pumped as Productivity was Below Expectation": {
-    "category": "Pre-production and cleanup",
-    "db_columns": [
-      "remedial_acid_pumped_as_productivity_was_below_expectation"
-    ],
-    "db_type": "Text",
-    "kind": "select",
-    "max_value": null,
-    "min_value": null,
-    "options": [
-      "Yes",
-      "No",
-      "Unknown",
-      "Not Applicable"
-    ],
-    "parameter": "Remedial Acid Pumped as Productivity was Below Expectation",
-    "required": false,
-    "scope": "completion_interval",
-    "step": null,
-    "subcategory": "Pre-production and cleanup details",
-    "table": "completion_interval",
-    "unit": ""
-  },
-  "completion_interval::Pre-production and cleanup::Pre-production and cleanup details::Remedial Acid Type": {
-    "category": "Pre-production and cleanup",
-    "db_columns": [
-      "remedial_acid_type"
-    ],
-    "db_type": "Text",
-    "kind": "select",
-    "max_value": null,
-    "min_value": null,
-    "options": [
-      "Organic",
-      "Inorganic",
-      "Mud acid",
-      "Blend",
-      "Other",
-      "Unknown",
-      "Not applicable"
-    ],
-    "parameter": "Remedial Acid Type",
-    "required": false,
-    "scope": "completion_interval",
-    "step": null,
-    "subcategory": "Pre-production and cleanup details",
-    "table": "completion_interval",
-    "unit": ""
-  },
-  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Core Derived Min Rock UCS": {
-    "category": "Reservoir Characterization",
-    "db_columns": [
-      "core_derived_min_rock_ucs"
-    ],
-    "db_type": "Numeric",
-    "kind": "number",
-    "max_value": null,
-    "min_value": 0,
-    "options": [],
-    "parameter": "Core Derived Min Rock UCS",
-    "required": false,
-    "scope": "completion_interval",
-    "step": null,
-    "subcategory": "Reservoir Rock and Fluid Properties",
-    "table": "completion_interval",
-    "unit": "psi"
-  },
-  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Core Derived P50 Rock UCS": {
-    "category": "Reservoir Characterization",
-    "db_columns": [
-      "core_derived_p50_rock_ucs"
-    ],
-    "db_type": "Numeric",
-    "kind": "number",
-    "max_value": null,
-    "min_value": 0,
-    "options": [],
-    "parameter": "Core Derived P50 Rock UCS",
-    "required": false,
-    "scope": "completion_interval",
-    "step": null,
-    "subcategory": "Reservoir Rock and Fluid Properties",
-    "table": "completion_interval",
-    "unit": "psi"
-  },
-  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Fines Content": {
-    "category": "Reservoir Characterization",
-    "db_columns": [
-      "fines_content"
-    ],
-    "db_type": "Numeric",
-    "kind": "number",
-    "max_value": null,
-    "min_value": 0,
-    "options": [],
-    "parameter": "Fines Content",
-    "required": false,
-    "scope": "completion_interval",
-    "step": null,
-    "subcategory": "Reservoir Rock and Fluid Properties",
-    "table": "completion_interval",
-    "unit": "%"
-  },
-  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Fluid Type": {
-    "category": "Reservoir Characterization",
-    "db_columns": [
-      "fluid_type"
-    ],
-    "db_type": "Text",
-    "kind": "select",
-    "max_value": null,
-    "min_value": null,
-    "options": [
-      "Oil",
-      "Condensate",
-      "Wet Gas",
-      "Dry Gas"
-    ],
-    "parameter": "Fluid Type",
-    "required": false,
-    "scope": "completion_interval",
-    "step": null,
-    "subcategory": "Reservoir Rock and Fluid Properties",
-    "table": "completion_interval",
-    "unit": ""
-  },
-  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Frac gradient": {
-    "category": "Reservoir Characterization",
-    "db_columns": [
-      "frac_gradient"
-    ],
-    "db_type": "Numeric",
-    "kind": "number",
-    "max_value": null,
-    "min_value": 0,
-    "options": [],
-    "parameter": "Frac gradient",
-    "required": false,
-    "scope": "completion_interval",
-    "step": null,
-    "subcategory": "Reservoir Rock and Fluid Properties",
-    "table": "completion_interval",
-    "unit": "ppg"
-  },
-  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Initial PI": {
-    "category": "Reservoir Characterization",
-    "db_columns": [
-      "initial_pi"
-    ],
-    "db_type": "Numeric",
-    "kind": "number",
-    "max_value": null,
-    "min_value": 0,
-    "options": [],
-    "parameter": "Initial PI",
-    "required": false,
-    "scope": "completion_interval",
-    "step": null,
-    "subcategory": "Reservoir Rock and Fluid Properties",
-    "table": "completion_interval",
-    "unit": "stb/d/psi or mmscf/d/psi"
-  },
-  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Initial Total Skin from PTA": {
-    "category": "Reservoir Characterization",
-    "db_columns": [
-      "initial_total_skin_from_pta"
-    ],
-    "db_type": "Numeric",
-    "kind": "number",
-    "max_value": null,
-    "min_value": null,
-    "options": [],
-    "parameter": "Initial Total Skin from PTA",
-    "required": false,
-    "scope": "completion_interval",
-    "step": null,
-    "subcategory": "Reservoir Rock and Fluid Properties",
-    "table": "completion_interval",
-    "unit": ""
-  },
-  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Oil Bubble Point (Pb)": {
-    "category": "Reservoir Characterization",
-    "db_columns": [
-      "oil_bubble_point_pb"
-    ],
-    "db_type": "Numeric",
-    "kind": "number",
-    "max_value": null,
-    "min_value": 0,
-    "options": [],
-    "parameter": "Oil Bubble Point (Pb)",
-    "required": false,
-    "scope": "completion_interval",
-    "step": null,
-    "subcategory": "Reservoir Rock and Fluid Properties",
-    "table": "completion_interval",
-    "unit": "psi"
-  },
-  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Oil Formation Volume Factor (Bo) at downhole conditions": {
-    "category": "Reservoir Characterization",
-    "db_columns": [
-      "oil_formation_volume_factor_bo_at_downhole_conditions"
-    ],
-    "db_type": "Numeric",
-    "kind": "number",
-    "max_value": null,
-    "min_value": 0,
-    "options": [],
-    "parameter": "Oil Formation Volume Factor (Bo) at downhole conditions",
-    "required": false,
-    "scope": "completion_interval",
-    "step": null,
-    "subcategory": "Reservoir Rock and Fluid Properties",
-    "table": "completion_interval",
-    "unit": ""
-  },
-  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::PSD Measurement Method": {
-    "category": "Reservoir Characterization",
-    "db_columns": [
-      "psd_measurement_method"
-    ],
-    "db_type": "Text",
-    "kind": "select",
-    "max_value": null,
-    "min_value": null,
-    "options": [
-      "LPSA",
-      "Sieve"
-    ],
-    "parameter": "PSD Measurement Method",
-    "required": false,
-    "scope": "completion_interval",
-    "step": null,
-    "subcategory": "Reservoir Rock and Fluid Properties",
-    "table": "completion_interval",
-    "unit": ""
-  },
-  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Particle Size Distribution D10/D25/D40/D50/D75/D90": {
-    "category": "Reservoir Characterization",
-    "db_columns": [
-      "particle_size_distribution_d10",
-      "particle_size_distribution_d25",
-      "particle_size_distribution_d40",
-      "particle_size_distribution_d50",
-      "particle_size_distribution_d75",
-      "particle_size_distribution_d90"
-    ],
-    "db_type": "Numeric",
-    "kind": "multi_number",
-    "max_value": null,
-    "min_value": null,
-    "options": [],
-    "parameter": "Particle Size Distribution D10/D25/D40/D50/D75/D90",
-    "required": false,
-    "scope": "completion_interval",
-    "step": null,
-    "subcategory": "Reservoir Rock and Fluid Properties",
-    "table": "completion_interval",
-    "unit": "microns"
-  },
-  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Permeability": {
-    "category": "Reservoir Characterization",
-    "db_columns": [
-      "permeability"
-    ],
-    "db_type": "Numeric",
-    "kind": "number",
-    "max_value": null,
-    "min_value": 0,
-    "options": [],
-    "parameter": "Permeability",
-    "required": false,
-    "scope": "completion_interval",
-    "step": null,
-    "subcategory": "Reservoir Rock and Fluid Properties",
-    "table": "completion_interval",
-    "unit": "md"
-  },
-  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Porosity": {
-    "category": "Reservoir Characterization",
-    "db_columns": [
-      "porosity"
-    ],
-    "db_type": "Numeric",
-    "kind": "number",
-    "max_value": null,
-    "min_value": 0,
-    "options": [],
-    "parameter": "Porosity",
-    "required": false,
-    "scope": "completion_interval",
-    "step": null,
-    "subcategory": "Reservoir Rock and Fluid Properties",
-    "table": "completion_interval",
-    "unit": "%"
-  },
-  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Producing Fluid Viscosity": {
-    "category": "Reservoir Characterization",
-    "db_columns": [
-      "producing_fluid_viscosity"
-    ],
-    "db_type": "Numeric",
-    "kind": "number",
-    "max_value": null,
-    "min_value": 0,
-    "options": [],
-    "parameter": "Producing Fluid Viscosity",
-    "required": false,
-    "scope": "completion_interval",
-    "step": null,
-    "subcategory": "Reservoir Rock and Fluid Properties",
-    "table": "completion_interval",
-    "unit": "cP"
-  },
-  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Reservoir Pressure at Time of Completion": {
-    "category": "Reservoir Characterization",
-    "db_columns": [
-      "reservoir_pressure_at_time_of_completion"
-    ],
-    "db_type": "Numeric",
-    "kind": "number",
-    "max_value": null,
-    "min_value": 0,
-    "options": [],
-    "parameter": "Reservoir Pressure at Time of Completion",
-    "required": false,
-    "scope": "completion_interval",
-    "step": null,
-    "subcategory": "Reservoir Rock and Fluid Properties",
-    "table": "completion_interval",
-    "unit": "psi"
-  },
-  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Reservoir Temperature": {
-    "category": "Reservoir Characterization",
-    "db_columns": [
-      "reservoir_temperature"
-    ],
-    "db_type": "Numeric",
-    "kind": "number",
-    "max_value": null,
-    "min_value": 0,
-    "options": [],
-    "parameter": "Reservoir Temperature",
-    "required": false,
-    "scope": "completion_interval",
-    "step": null,
-    "subcategory": "Reservoir Rock and Fluid Properties",
-    "table": "completion_interval",
-    "unit": "degF"
-  },
-  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Reservoir pressure at first sand production": {
-    "category": "Reservoir Characterization",
-    "db_columns": [
-      "reservoir_pressure_at_first_sand_production"
-    ],
-    "db_type": "Numeric",
-    "kind": "number",
-    "max_value": null,
-    "min_value": 0,
-    "options": [],
-    "parameter": "Reservoir pressure at first sand production",
-    "required": false,
-    "scope": "completion_interval",
-    "step": null,
-    "subcategory": "Reservoir Rock and Fluid Properties",
-    "table": "completion_interval",
-    "unit": "psi"
-  },
-  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Rock compressibility at first sand production": {
-    "category": "Reservoir Characterization",
-    "db_columns": [
-      "rock_compressibility_at_first_sand_production"
-    ],
-    "db_type": "Numeric",
-    "kind": "number",
-    "max_value": null,
-    "min_value": 0,
-    "options": [],
-    "parameter": "Rock compressibility at first sand production",
-    "required": false,
-    "scope": "completion_interval",
-    "step": null,
-    "subcategory": "Reservoir Rock and Fluid Properties",
-    "table": "completion_interval",
-    "unit": "microsips"
-  },
-  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Rock compressibility at initial reservoir pressure": {
-    "category": "Reservoir Characterization",
-    "db_columns": [
-      "rock_compressibility_at_initial_reservoir_pressure"
-    ],
-    "db_type": "Numeric",
-    "kind": "number",
-    "max_value": null,
-    "min_value": 0,
-    "options": [],
-    "parameter": "Rock compressibility at initial reservoir pressure",
-    "required": false,
-    "scope": "completion_interval",
-    "step": null,
-    "subcategory": "Reservoir Rock and Fluid Properties",
-    "table": "completion_interval",
-    "unit": "microsips"
-  },
-  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Shale Reactivity CEC": {
-    "category": "Reservoir Characterization",
-    "db_columns": [
-      "shale_reactivity_cec"
-    ],
-    "db_type": "Numeric",
-    "kind": "number",
-    "max_value": null,
-    "min_value": 0,
-    "options": [],
-    "parameter": "Shale Reactivity CEC",
-    "required": false,
-    "scope": "completion_interval",
-    "step": null,
-    "subcategory": "Reservoir Rock and Fluid Properties",
-    "table": "completion_interval",
-    "unit": ""
-  },
-  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Solution Gas Ratio (Rs)": {
-    "category": "Reservoir Characterization",
-    "db_columns": [
-      "solution_gas_ratio_rs"
-    ],
-    "db_type": "Numeric",
-    "kind": "number",
-    "max_value": null,
-    "min_value": 0,
-    "options": [],
-    "parameter": "Solution Gas Ratio (Rs)",
-    "required": false,
-    "scope": "completion_interval",
-    "step": null,
-    "subcategory": "Reservoir Rock and Fluid Properties",
-    "table": "completion_interval",
-    "unit": "scf/stb"
-  },
-  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Source of sand sample": {
-    "category": "Reservoir Characterization",
-    "db_columns": [
-      "source_of_sand_sample"
-    ],
-    "db_type": "Text",
-    "kind": "select",
-    "max_value": null,
-    "min_value": null,
-    "options": [
-      "cores",
-      "bottom-hole sand sample",
-      "surface sample",
-      "analog well"
-    ],
-    "parameter": "Source of sand sample",
-    "required": false,
-    "scope": "completion_interval",
-    "step": null,
-    "subcategory": "Reservoir Rock and Fluid Properties",
-    "table": "completion_interval",
-    "unit": ""
-  },
-  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::Virgin Reservoir Pressure": {
-    "category": "Reservoir Characterization",
-    "db_columns": [
-      "virgin_reservoir_pressure"
-    ],
-    "db_type": "Numeric",
-    "kind": "number",
-    "max_value": null,
-    "min_value": 0,
-    "options": [],
-    "parameter": "Virgin Reservoir Pressure",
-    "required": false,
-    "scope": "completion_interval",
-    "step": null,
-    "subcategory": "Reservoir Rock and Fluid Properties",
-    "table": "completion_interval",
-    "unit": "psi"
-  },
-  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::k.h from Log": {
-    "category": "Reservoir Characterization",
-    "db_columns": [
-      "k_h_from_log"
-    ],
-    "db_type": "Numeric",
-    "kind": "number",
-    "max_value": null,
-    "min_value": 0,
-    "options": [],
-    "parameter": "k.h from Log",
-    "required": false,
-    "scope": "completion_interval",
-    "step": null,
-    "subcategory": "Reservoir Rock and Fluid Properties",
-    "table": "completion_interval",
-    "unit": "md-ft"
-  },
-  "completion_interval::Reservoir Characterization::Reservoir Rock and Fluid Properties::k.h from PTA": {
-    "category": "Reservoir Characterization",
-    "db_columns": [
-      "k_h_from_pta"
-    ],
-    "db_type": "Numeric",
-    "kind": "number",
-    "max_value": null,
-    "min_value": 0,
-    "options": [],
-    "parameter": "k.h from PTA",
-    "required": false,
-    "scope": "completion_interval",
-    "step": null,
-    "subcategory": "Reservoir Rock and Fluid Properties",
-    "table": "completion_interval",
-    "unit": "md-ft"
   },
   "completion_interval::Wellbore::Wellbore properties::Completion Interval Length": {
     "category": "Wellbore",
@@ -1483,8 +942,566 @@
     "table": "completion_interval",
     "unit": ""
   },
-  "production_interval::Completion Interval Details::Completion Intervals::Number of Completion Intervals": {
-    "category": "Completion Interval Details",
+  "sand_body::Pre-production and cleanup::Pre-production and cleanup details::Percentage of ideal PI or skin achieved": {
+    "category": "Pre-production and cleanup",
+    "db_columns": [
+      "percentage_of_ideal_pi_or_skin_achieved"
+    ],
+    "db_type": "Integer",
+    "kind": "number",
+    "max_value": null,
+    "min_value": null,
+    "options": [],
+    "parameter": "Percentage of ideal PI or skin achieved",
+    "required": false,
+    "scope": "sand_body",
+    "step": 1,
+    "subcategory": "Pre-production and cleanup details",
+    "table": "sand_body",
+    "unit": "%"
+  },
+  "sand_body::Pre-production and cleanup::Pre-production and cleanup details::Remedial Acid Helped Productivity": {
+    "category": "Pre-production and cleanup",
+    "db_columns": [
+      "remedial_acid_helped_productivity"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "Yes",
+      "No",
+      "Partially",
+      "Unknown",
+      "Not Applicable"
+    ],
+    "parameter": "Remedial Acid Helped Productivity",
+    "required": false,
+    "scope": "sand_body",
+    "step": null,
+    "subcategory": "Pre-production and cleanup details",
+    "table": "sand_body",
+    "unit": ""
+  },
+  "sand_body::Pre-production and cleanup::Pre-production and cleanup details::Remedial Acid Pumped as Productivity was Below Expectation": {
+    "category": "Pre-production and cleanup",
+    "db_columns": [
+      "remedial_acid_pumped_as_productivity_was_below_expectation"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "Yes",
+      "No",
+      "Unknown",
+      "Not Applicable"
+    ],
+    "parameter": "Remedial Acid Pumped as Productivity was Below Expectation",
+    "required": false,
+    "scope": "sand_body",
+    "step": null,
+    "subcategory": "Pre-production and cleanup details",
+    "table": "sand_body",
+    "unit": ""
+  },
+  "sand_body::Pre-production and cleanup::Pre-production and cleanup details::Remedial Acid Type": {
+    "category": "Pre-production and cleanup",
+    "db_columns": [
+      "remedial_acid_type"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "Organic",
+      "Inorganic",
+      "Mud acid",
+      "Blend",
+      "Other",
+      "Unknown",
+      "Not applicable"
+    ],
+    "parameter": "Remedial Acid Type",
+    "required": false,
+    "scope": "sand_body",
+    "step": null,
+    "subcategory": "Pre-production and cleanup details",
+    "table": "sand_body",
+    "unit": ""
+  },
+  "sand_body::Reservoir Characterization::Reservoir Rock and Fluid Properties::Core Derived Min Rock UCS": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "core_derived_min_rock_ucs"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Core Derived Min Rock UCS",
+    "required": false,
+    "scope": "sand_body",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "sand_body",
+    "unit": "psi"
+  },
+  "sand_body::Reservoir Characterization::Reservoir Rock and Fluid Properties::Core Derived P50 Rock UCS": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "core_derived_p50_rock_ucs"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Core Derived P50 Rock UCS",
+    "required": false,
+    "scope": "sand_body",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "sand_body",
+    "unit": "psi"
+  },
+  "sand_body::Reservoir Characterization::Reservoir Rock and Fluid Properties::Fines Content": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "fines_content"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Fines Content",
+    "required": false,
+    "scope": "sand_body",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "sand_body",
+    "unit": "%"
+  },
+  "sand_body::Reservoir Characterization::Reservoir Rock and Fluid Properties::Fluid Type": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "fluid_type"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "Oil",
+      "Condensate",
+      "Wet Gas",
+      "Dry Gas"
+    ],
+    "parameter": "Fluid Type",
+    "required": false,
+    "scope": "sand_body",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "sand_body",
+    "unit": ""
+  },
+  "sand_body::Reservoir Characterization::Reservoir Rock and Fluid Properties::Frac gradient": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "frac_gradient"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Frac gradient",
+    "required": false,
+    "scope": "sand_body",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "sand_body",
+    "unit": "ppg"
+  },
+  "sand_body::Reservoir Characterization::Reservoir Rock and Fluid Properties::Initial PI": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "initial_pi"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Initial PI",
+    "required": false,
+    "scope": "sand_body",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "sand_body",
+    "unit": "stb/d/psi or mmscf/d/psi"
+  },
+  "sand_body::Reservoir Characterization::Reservoir Rock and Fluid Properties::Initial Total Skin from PTA": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "initial_total_skin_from_pta"
+    ],
+    "db_type": "Integer",
+    "kind": "number",
+    "max_value": null,
+    "min_value": null,
+    "options": [],
+    "parameter": "Initial Total Skin from PTA",
+    "required": false,
+    "scope": "sand_body",
+    "step": 1,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "sand_body",
+    "unit": ""
+  },
+  "sand_body::Reservoir Characterization::Reservoir Rock and Fluid Properties::Oil Bubble Point (Pb)": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "oil_bubble_point_pb"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Oil Bubble Point (Pb)",
+    "required": false,
+    "scope": "sand_body",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "sand_body",
+    "unit": "psi"
+  },
+  "sand_body::Reservoir Characterization::Reservoir Rock and Fluid Properties::Oil Formation Volume Factor (Bo) at downhole conditions": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "oil_formation_volume_factor_bo_at_downhole_conditions"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Oil Formation Volume Factor (Bo) at downhole conditions",
+    "required": false,
+    "scope": "sand_body",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "sand_body",
+    "unit": ""
+  },
+  "sand_body::Reservoir Characterization::Reservoir Rock and Fluid Properties::PSD Measurement Method": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "psd_measurement_method"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "LPSA",
+      "Sieve"
+    ],
+    "parameter": "PSD Measurement Method",
+    "required": false,
+    "scope": "sand_body",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "sand_body",
+    "unit": ""
+  },
+  "sand_body::Reservoir Characterization::Reservoir Rock and Fluid Properties::Particle Size Distribution D10/D25/D40/D50/D75/D90": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "particle_size_distribution_value_1",
+      "particle_size_distribution_value_2",
+      "particle_size_distribution_value_3",
+      "particle_size_distribution_value_4",
+      "particle_size_distribution_value_5"
+    ],
+    "db_type": "Numeric",
+    "kind": "multi_number",
+    "max_value": null,
+    "min_value": null,
+    "options": [],
+    "parameter": "Particle Size Distribution D10/D25/D40/D50/D75/D90",
+    "required": false,
+    "scope": "sand_body",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "sand_body",
+    "unit": "microns"
+  },
+  "sand_body::Reservoir Characterization::Reservoir Rock and Fluid Properties::Permeability": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "permeability"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Permeability",
+    "required": false,
+    "scope": "sand_body",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "sand_body",
+    "unit": "md"
+  },
+  "sand_body::Reservoir Characterization::Reservoir Rock and Fluid Properties::Porosity": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "porosity"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Porosity",
+    "required": false,
+    "scope": "sand_body",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "sand_body",
+    "unit": "%"
+  },
+  "sand_body::Reservoir Characterization::Reservoir Rock and Fluid Properties::Producing Fluid Viscosity": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "producing_fluid_viscosity"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Producing Fluid Viscosity",
+    "required": false,
+    "scope": "sand_body",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "sand_body",
+    "unit": "cP"
+  },
+  "sand_body::Reservoir Characterization::Reservoir Rock and Fluid Properties::Reservoir Pressure at Time of Completion": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "reservoir_pressure_at_time_of_completion"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Reservoir Pressure at Time of Completion",
+    "required": false,
+    "scope": "sand_body",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "sand_body",
+    "unit": "psi"
+  },
+  "sand_body::Reservoir Characterization::Reservoir Rock and Fluid Properties::Reservoir Temperature": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "reservoir_temperature"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Reservoir Temperature",
+    "required": false,
+    "scope": "sand_body",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "sand_body",
+    "unit": "degF"
+  },
+  "sand_body::Reservoir Characterization::Reservoir Rock and Fluid Properties::Reservoir pressure at first sand production": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "reservoir_pressure_at_first_sand_production"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Reservoir pressure at first sand production",
+    "required": false,
+    "scope": "sand_body",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "sand_body",
+    "unit": "psi"
+  },
+  "sand_body::Reservoir Characterization::Reservoir Rock and Fluid Properties::Rock compressibility at first sand production": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "rock_compressibility_at_first_sand_production"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Rock compressibility at first sand production",
+    "required": false,
+    "scope": "sand_body",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "sand_body",
+    "unit": "microsips"
+  },
+  "sand_body::Reservoir Characterization::Reservoir Rock and Fluid Properties::Rock compressibility at initial reservoir pressure": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "rock_compressibility_at_initial_reservoir_pressure"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Rock compressibility at initial reservoir pressure",
+    "required": false,
+    "scope": "sand_body",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "sand_body",
+    "unit": "microsips"
+  },
+  "sand_body::Reservoir Characterization::Reservoir Rock and Fluid Properties::Shale Reactivity CEC": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "shale_reactivity_cec"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Shale Reactivity CEC",
+    "required": false,
+    "scope": "sand_body",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "sand_body",
+    "unit": ""
+  },
+  "sand_body::Reservoir Characterization::Reservoir Rock and Fluid Properties::Solution Gas Ratio (Rs)": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "solution_gas_ratio_rs"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Solution Gas Ratio (Rs)",
+    "required": false,
+    "scope": "sand_body",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "sand_body",
+    "unit": "scf/stb"
+  },
+  "sand_body::Reservoir Characterization::Reservoir Rock and Fluid Properties::Source of sand sample": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "source_of_sand_sample"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_value": null,
+    "min_value": null,
+    "options": [
+      "cores",
+      "bottom-hole sand sample",
+      "surface sample",
+      "analog well"
+    ],
+    "parameter": "Source of sand sample",
+    "required": false,
+    "scope": "sand_body",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "sand_body",
+    "unit": ""
+  },
+  "sand_body::Reservoir Characterization::Reservoir Rock and Fluid Properties::Virgin Reservoir Pressure": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "virgin_reservoir_pressure"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Virgin Reservoir Pressure",
+    "required": false,
+    "scope": "sand_body",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "sand_body",
+    "unit": "psi"
+  },
+  "sand_body::Reservoir Characterization::Reservoir Rock and Fluid Properties::k.h from Log": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "k_h_from_log"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "k.h from Log",
+    "required": false,
+    "scope": "sand_body",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "sand_body",
+    "unit": "md-ft"
+  },
+  "sand_body::Reservoir Characterization::Reservoir Rock and Fluid Properties::k.h from PTA": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "k_h_from_pta"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_value": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "k.h from PTA",
+    "required": false,
+    "scope": "sand_body",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "sand_body",
+    "unit": "md-ft"
+  },
+  "well::Completion Intervals::Completion Intervals::Number of Completion Intervals": {
+    "category": "Completion Intervals",
     "db_columns": [
       "number_of_completion_intervals"
     ],
@@ -1495,10 +1512,10 @@
     "options": [],
     "parameter": "Number of Completion Intervals",
     "required": false,
-    "scope": "production_interval",
+    "scope": "well",
     "step": 1,
     "subcategory": "Completion Intervals",
-    "table": "production_interval",
+    "table": "well",
     "unit": ""
   },
   "well::General Information::Data Origin & Disclosure::Data confidence level": {
@@ -1586,24 +1603,6 @@
     "scope": "well",
     "step": null,
     "subcategory": "Data Origin & Disclosure",
-    "table": "well",
-    "unit": ""
-  },
-  "well::Production Zone Details::Production Zones::Number of production intervals": {
-    "category": "Production Zone Details",
-    "db_columns": [
-      "number_of_production_intervals"
-    ],
-    "db_type": "Integer",
-    "kind": "number",
-    "max_value": 10,
-    "min_value": 1,
-    "options": [],
-    "parameter": "Number of production intervals",
-    "required": false,
-    "scope": "well",
-    "step": 1,
-    "subcategory": "Production Zones",
     "table": "well",
     "unit": ""
   },
@@ -2048,7 +2047,7 @@
     "step": null,
     "subcategory": "Production Performance History",
     "table": "well",
-    "unit": "YYYY-MM-DD"
+    "unit": ""
   },
   "well::Well Specific::Production Performance History::Gas Rate @ Shut-in": {
     "category": "Well Specific",
@@ -2138,7 +2137,7 @@
     "step": null,
     "subcategory": "Production Performance History",
     "table": "well",
-    "unit": "YYYY-MM-DD"
+    "unit": ""
   },
   "well::Well Specific::Production Performance History::Max drawdown over well life": {
     "category": "Well Specific",
@@ -2475,7 +2474,7 @@
     "step": null,
     "subcategory": "Production Performance History",
     "table": "well",
-    "unit": "YYYY-MM-DD"
+    "unit": ""
   },
   "well::Well Specific::Well & Field Identification::Field name": {
     "category": "Well Specific",

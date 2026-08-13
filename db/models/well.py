@@ -33,9 +33,9 @@ class Well(Base):
     __table__ = well_table
 
     organization = relationship("Organization")
-    production_intervals = relationship(
-        "ProductionInterval",
+    completion_intervals = relationship(
+        "CompletionInterval",
         back_populates="well",
         cascade="all, delete-orphan",
-        order_by="ProductionInterval.ordinal",
+        order_by="CompletionInterval.ordinal",
     )

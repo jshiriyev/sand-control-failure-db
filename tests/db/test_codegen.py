@@ -15,17 +15,18 @@ REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 GENERATED_DIR = REPO_ROOT / "db" / "generated"
 GENERATED_FILES = [
     "well_columns.py",
-    "production_interval_columns.py",
     "completion_interval_columns.py",
+    "sand_body_columns.py",
     "field_registry.json",
 ]
 
 
 def test_codegen_runs_without_error():
     per_table = codegen.generate()
-    assert set(per_table.keys()) == {"well", "production_interval", "completion_interval"}
+    assert set(per_table.keys()) == {"well", "completion_interval", "sand_body"}
     assert len(per_table["well"]) > 0
     assert len(per_table["completion_interval"]) > 0
+    assert len(per_table["sand_body"]) > 0
 
 
 def test_generated_output_matches_committed_files(tmp_path, monkeypatch):
@@ -49,7 +50,11 @@ def test_field_registry_has_one_entry_per_dictionary_row():
 
 
 def test_multi_number_fields_expand_to_multiple_columns():
+    # "Mud PSD"'s Unit cell isn't slash-delimited and its Parameter name has
+    # no trailing D10/D50/D90-style suffix, so its sub-labels fall back to
+    # the generic "Value 1", "Value 2", ... convention (see
+    # dictionary.parsing._derive_multi_labels).
     registry = json.loads((GENERATED_DIR / "field_registry.json").read_text(encoding="utf-8"))
     entry = registry["completion_interval::Drilling::Drilling Details::Mud PSD"]
-    assert entry["db_columns"] == ["mud_psd_d10", "mud_psd_d50", "mud_psd_d90"]
+    assert entry["db_columns"] == ["mud_psd_value_1", "mud_psd_value_2", "mud_psd_value_3"]
     assert entry["db_type"] == "Numeric"

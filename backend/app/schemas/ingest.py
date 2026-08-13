@@ -18,25 +18,25 @@ from backend.app.schemas.validation import validate_bucket
 Bucket = dict[str, dict[str, dict[str, Any]]]
 
 
-class ProductionIntervalIngest(BaseModel):
+class CompletionIntervalIngest(BaseModel):
     fields: Bucket = Field(default_factory=dict)
-    completion_intervals: list[Bucket] = Field(default_factory=list)
+    sand_bodies: list[Bucket] = Field(default_factory=list)
 
     @field_validator("fields")
     @classmethod
     def _validate_fields(cls, v: Bucket) -> Bucket:
-        return validate_bucket(v, scope="production_interval")
+        return validate_bucket(v, scope="completion_interval")
 
-    @field_validator("completion_intervals")
+    @field_validator("sand_bodies")
     @classmethod
-    def _validate_completion_intervals(cls, v: list[Bucket]) -> list[Bucket]:
-        return [validate_bucket(item, scope="completion_interval") for item in v]
+    def _validate_sand_bodies(cls, v: list[Bucket]) -> list[Bucket]:
+        return [validate_bucket(item, scope="sand_body") for item in v]
 
 
 class RecordIngest(BaseModel):
     generated_at: datetime | None = None
     well: Bucket = Field(default_factory=dict)
-    production_intervals: list[ProductionIntervalIngest] = Field(min_length=1)
+    completion_intervals: list[CompletionIntervalIngest] = Field(min_length=1)
 
     @field_validator("well")
     @classmethod

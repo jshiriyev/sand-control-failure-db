@@ -6,7 +6,7 @@ from dictionary.parsing import (
     parse_affected_cell,
     parse_dropdown_options,
     parse_multi_number,
-    parse_number_spec,
+    parse_validation_cell,
     safe_literal,
 )
 
@@ -17,71 +17,111 @@ def test_safe_literal_valid():
     assert safe_literal("None") is None
 
 
+def test_safe_literal_tolerates_lowercase_json_booleans_and_null():
+    assert safe_literal('{"min": 1, "required": true}') == {"min": 1, "required": True}
+    assert safe_literal('{"required": false}') == {"required": False}
+    assert safe_literal('{"min": null}') == {"min": None}
+
+
 def test_safe_literal_invalid_returns_none():
     assert safe_literal("not a literal {") is None
     assert safe_literal("") is None
     assert safe_literal(None) is None
 
 
+def test_parse_validation_cell_bare_type():
+    assert parse_validation_cell('{"Decimal"}') == {
+        "type": "Decimal", "options": None, "min": None, "max": None, "required": False,
+    }
+
+
+def test_parse_validation_cell_with_modifiers():
+    assert parse_validation_cell('{"Whole number": {"min": 1, "max": 10}}') == {
+        "type": "Whole number", "options": None, "min": 1, "max": 10, "required": False,
+    }
+
+
+def test_parse_validation_cell_required():
+    spec = parse_validation_cell('{"Whole number": {"required": True, "min": 0}}')
+    assert spec["required"] is True
+    assert spec["min"] == 0
+
+
+def test_parse_validation_cell_list():
+    assert parse_validation_cell('{"List": ["Zebra", "Apple", "Mango"]}') == {
+        "type": "List", "options": ["Zebra", "Apple", "Mango"], "min": None, "max": None, "required": False,
+    }
+
+
+def test_parse_validation_cell_any_value():
+    assert parse_validation_cell('{"Any Value": {}}') == {
+        "type": "Any Value", "options": None, "min": None, "max": None, "required": False,
+    }
+
+
+def test_parse_validation_cell_blank():
+    assert parse_validation_cell("") is None
+    assert parse_validation_cell(None) is None
+
+
+def test_parse_validation_cell_multi_number_malformed_bracket_shape():
+    # The real sheet's multi-number cells look like this: not valid literal
+    # syntax on their own, recovered segment by segment.
+    specs = parse_validation_cell('{["Decimal": {"min": 0}, "Decimal": {"min": 0}, "Decimal": {"min": 0}]}')
+    assert specs == [
+        {"type": "Decimal", "options": None, "min": 0, "max": None, "required": False},
+        {"type": "Decimal", "options": None, "min": 0, "max": None, "required": False},
+        {"type": "Decimal", "options": None, "min": 0, "max": None, "required": False},
+    ]
+
+
+def test_parse_validation_cell_multi_number_well_formed_list_shape():
+    # A cleanly-written list-of-specs is supported too, not just the
+    # malformed wrapper the current sheet happens to use.
+    specs = parse_validation_cell('[{"Decimal": {"min": 0}}, {"Whole number": {"min": 1}}]')
+    assert specs == [
+        {"type": "Decimal", "options": None, "min": 0, "max": None, "required": False},
+        {"type": "Whole number", "options": None, "min": 1, "max": None, "required": False},
+    ]
+
+
 def test_parse_dropdown_options_preserves_source_order():
-    # ast.literal_eval would give an unordered set -- must not rely on that.
-    assert parse_dropdown_options('{"Zebra", "Apple", "Mango"}') == ["Zebra", "Apple", "Mango"]
+    assert parse_dropdown_options('{"List": ["Zebra", "Apple", "Mango"]}') == ["Zebra", "Apple", "Mango"]
 
 
 def test_parse_dropdown_options_empty():
     assert parse_dropdown_options("") == []
     assert parse_dropdown_options(None) == []
-
-
-def test_parse_number_spec_positive():
-    assert parse_number_spec('{"Positive Number"}') == {"min_value": 0}
-
-
-def test_parse_number_spec_plain_number():
-    assert parse_number_spec('{"Number"}') == {}
-
-
-def test_parse_number_spec_positive_integer_with_min_max():
-    assert parse_number_spec('{"Positive Integer": {"min": 1, "max": 10}}') == {
-        "min_value": 1,
-        "max_value": 10,
-        "step": 1,
-    }
-
-
-def test_parse_number_spec_required():
-    assert parse_number_spec('{"Positive Integer": {"required": True}}') == {
-        "min_value": 0,
-        "step": 1,
-        "required": True,
-    }
-
-
-def test_parse_number_spec_blank():
-    assert parse_number_spec("") == {}
+    assert parse_dropdown_options('{"Decimal"}') == []
 
 
 def test_parse_multi_number_labels_from_unit():
-    labels = parse_multi_number('{"Number / Number / Number"}', "D10 / D50 / D90", "Mud PSD")
+    result = parse_multi_number(
+        '{["Decimal": {"min": 0}, "Decimal": {"min": 0}, "Decimal": {"min": 0}]}', "D10 / D50 / D90", "Mud PSD",
+    )
+    assert result is not None
+    labels, specs = result
     assert labels == ["D10", "D50", "D90"]
+    assert len(specs) == 3
+    assert all(s["min"] == 0 for s in specs)
 
 
 def test_parse_multi_number_labels_from_parameter_suffix_when_unit_mismatched():
-    labels = parse_multi_number(
-        '{"Number / Number / Number / Number / Number / Number"}',
-        "microns",
-        "Particle Size Distribution D10/D25/D40/D50/D75/D90",
+    raw = '{[' + ", ".join(['"Decimal": {"min": 0}'] * 6) + ']}'
+    labels, _specs = parse_multi_number(
+        raw, "microns", "Particle Size Distribution D10/D25/D40/D50/D75/D90",
     )
     assert labels == ["D10", "D25", "D40", "D50", "D75", "D90"]
 
 
 def test_parse_multi_number_generic_fallback():
-    labels = parse_multi_number('{"Number / Number"}', "", "Some Pair")
+    raw = '{["Decimal": {}, "Decimal": {}]}'
+    labels, _specs = parse_multi_number(raw, "", "Some Pair")
     assert labels == ["Value 1", "Value 2"]
 
 
 def test_parse_multi_number_not_a_multi_field():
-    assert parse_multi_number('{"Positive Number"}', "ft", "Water depth") is None
+    assert parse_multi_number('{"Decimal": {"min": 0}}', "ft", "Water depth") is None
     assert parse_multi_number("", "", "Anything") is None
 
 

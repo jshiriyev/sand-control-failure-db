@@ -9,7 +9,7 @@ from pathlib import Path
 from sqlalchemy import inspect
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
-EXPECTED_TABLES = {"organizations", "well", "production_interval", "completion_interval", "alembic_version"}
+EXPECTED_TABLES = {"organizations", "well", "completion_interval", "sand_body", "alembic_version"}
 
 
 def test_upgrade_creates_all_tables(db_engine):

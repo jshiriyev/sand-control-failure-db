@@ -14,18 +14,20 @@ package and is shared with `db/codegen.py`, so the form and the database
 schema are always derived from the exact same interpretation of MASTER.xlsx.
 See CLAUDE.md for the full data model. Key points this generator relies on:
 
-- `Scope` is one of "Well", "Production Interval {id}", "Completion Interval {id}" --
-  a well has one or more Production Intervals, each of which has one or more
-  Completion Intervals (sand bodies). The form renders two independently
-  repeatable, nested block levels for these.
+- `Scope` is one of "Well", "Completion Interval {id}", "Sand Body {id}" --
+  a well has one or more Completion Intervals, each of which has one or more
+  Sand Bodies. The form renders two independently repeatable, nested block
+  levels for these.
 - `Data Validation`, `Affected Subcategory` and `Affected Parameter` cells are
-  written as Python-literal-safe text (parsed with ast.literal_eval), e.g.
-  `{"Positive Number"}`, `{"Positive Integer": {"min": 1, "max": 10}}`, or
-  `{"Onshore": {"Water depth": False, "Tree type": False}}`. In the Affected
-  columns, a target listed as a plain set member means "start hidden, SHOW when
-  this trigger value is selected" (the original convention); a target mapped to
-  `False` means "start visible, HIDE when this trigger value is selected" (the
-  newer exclude convention). Both can apply to the same target.
+  written as Python-literal-safe text (parsed with ast.literal_eval, tolerant
+  of JSON's lowercase true/false/null). Data Validation cells are a type name
+  plus optional modifiers, e.g. `{"Decimal": {"min": 0}}`, `{"List": ["A",
+  "B"]}`, or a bare `{"Short Date"}` when there's nothing to constrain. In the
+  Affected columns, a target listed as a plain set member means "start
+  hidden, SHOW when this trigger value is selected" (the original
+  convention); a target mapped to `False` means "start visible, HIDE when
+  this trigger value is selected" (the newer exclude convention). Both can
+  apply to the same target.
 
 Requires: openpyxl (pip install openpyxl)
 """
@@ -45,7 +47,7 @@ if str(REPO_ROOT) not in sys.path:
 
 from dictionary import (  # noqa: E402
     COMPLETION_SCOPE,
-    PRODUCTION_SCOPE,
+    SAND_BODY_SCOPE,
     WELL_SCOPE,
     FieldSpec,
     ParamRow,
@@ -57,8 +59,8 @@ from dictionary import (  # noqa: E402
 
 DEFAULT_INPUT = REPO_ROOT / "MASTER.xlsx"
 DEFAULT_OUTPUT = Path(__file__).resolve().parent / "sand_control_form.html"
-DEFAULT_MAX_PRODUCTION = 10
 DEFAULT_MAX_COMPLETION = 10
+DEFAULT_MAX_SAND_BODY = 10
 
 WELL_ZONE_CLASS = {
     "General Information": "zone-general",
@@ -70,8 +72,8 @@ WELL_ZONE_CLASS = {
 # exact Parameter name -- if the dictionary renames either field, it just
 # reverts to a plain Number input (no crash, no special handling lost).
 COUNTER_ROLES = {
-    "Number of production intervals": "apply-production",
     "Number of Completion Intervals": "apply-completion",
+    "Number of sand bodies": "apply-sand-body",
 }
 
 
@@ -83,8 +85,8 @@ COUNTER_ROLES = {
 
 def build_model(rows: list[ParamRow]) -> dict:
     well_rows = [r for r in rows if r.scope == WELL_SCOPE]
-    production_rows = [r for r in rows if r.scope == PRODUCTION_SCOPE]
     completion_rows = [r for r in rows if r.scope == COMPLETION_SCOPE]
+    sand_body_rows = [r for r in rows if r.scope == SAND_BODY_SCOPE]
 
     subcat_show: dict[tuple[str, str], list[tuple[str, str]]] = defaultdict(list)
     subcat_hide: dict[tuple[str, str], list[tuple[str, str]]] = defaultdict(list)
@@ -101,8 +103,8 @@ def build_model(rows: list[ParamRow]) -> dict:
 
     return {
         "well": group_by_category_subcategory(well_rows),
-        "production": group_by_category_subcategory(production_rows),
         "completion": group_by_category_subcategory(completion_rows),
+        "sand_body": group_by_category_subcategory(sand_body_rows),
         "subcat_show": subcat_show,
         "subcat_hide": subcat_hide,
         "param_show": param_show,
@@ -152,12 +154,18 @@ def render_control(row: ParamRow, spec: FieldSpec) -> str:
     if spec.kind == "date":
         return f'<input type="date"{req_attr} data-param="{dp}" data-kind="date">'
     if spec.kind == "multi_number":
-        items = "".join(
-            f'<span class="mn-item"><span class="mn-label">{esc(lbl)}</span>'
-            f'<input type="number" step="any" class="mn-input"></span>'
-            for lbl in spec.multi_labels
-        )
-        return f'<div class="multi-number" data-param="{dp}" data-kind="multi_number">{items}</div>'
+        items = []
+        for i, lbl in enumerate(spec.multi_labels):
+            min_v = spec.multi_min_values[i] if i < len(spec.multi_min_values) else None
+            max_v = spec.multi_max_values[i] if i < len(spec.multi_max_values) else None
+            item_attrs = ""
+            if min_v is not None:
+                item_attrs += f' min="{min_v}"'
+            if max_v is not None:
+                item_attrs += f' max="{max_v}"'
+            items.append(f'<span class="mn-item"><span class="mn-label">{esc(lbl)}</span>'
+                         f'<input type="number" step="any"{item_attrs} class="mn-input"></span>')
+        return f'<div class="multi-number" data-param="{dp}" data-kind="multi_number">{"".join(items)}</div>'
     return f'<textarea rows="2"{req_attr} data-param="{dp}" data-kind="text" placeholder="Enter text"></textarea>'
 
 
@@ -204,13 +212,13 @@ def render_well_section(model: dict) -> str:
     return f'<div id="well-section">{"".join(zones)}</div>'
 
 
-def render_completion_template(model: dict) -> str:
-    groups = render_flat_groups(model["completion"], model)
+def render_sand_body_template(model: dict) -> str:
+    groups = render_flat_groups(model["sand_body"], model)
     return (
-        '<template class="completion-interval-template">'
-        '<section class="interval-instance completion-instance">'
+        '<template class="sand-body-template">'
+        '<section class="interval-instance sand-body-instance">'
         '<div class="interval-banner">'
-        '<h3 class="zone-title">COMPLETION INTERVAL <span class="interval-index"></span></h3>'
+        '<h3 class="zone-title">SAND BODY <span class="interval-index"></span></h3>'
         '<button type="button" class="remove-interval-btn">Remove</button>'
         '</div>'
         f'{groups}'
@@ -219,25 +227,25 @@ def render_completion_template(model: dict) -> str:
     )
 
 
-def render_production_template(model: dict) -> str:
-    own_groups = render_flat_groups(model["production"], model)
-    completion_tpl = render_completion_template(model)
+def render_completion_template(model: dict) -> str:
+    own_groups = render_flat_groups(model["completion"], model)
+    sand_body_tpl = render_sand_body_template(model)
     return (
-        '<template id="production-interval-template">'
-        '<section class="interval-instance production-instance">'
+        '<template id="completion-interval-template">'
+        '<section class="interval-instance completion-instance">'
         '<div class="interval-banner">'
-        '<h2 class="zone-title">PRODUCTION INTERVAL <span class="interval-index"></span></h2>'
+        '<h2 class="zone-title">COMPLETION INTERVAL <span class="interval-index"></span></h2>'
         '<button type="button" class="remove-interval-btn">Remove</button>'
         '</div>'
         f'<div class="own-fields">{own_groups}</div>'
-        '<div class="completion-nest">'
-        '<div class="completion-intervals-toolbar">'
-        '<h3>Completion Intervals</h3>'
-        '<button type="button" class="add-completion-btn">+ Add Completion Interval</button>'
+        '<div class="sand-body-nest">'
+        '<div class="sand-bodies-toolbar">'
+        '<h3>Sand Bodies</h3>'
+        '<button type="button" class="add-sand-body-btn">+ Add Sand Body</button>'
         '</div>'
-        '<div class="completion-intervals-container"></div>'
+        '<div class="sand-bodies-container"></div>'
         '</div>'
-        f'{completion_tpl}'
+        f'{sand_body_tpl}'
         '</section>'
         '</template>'
     )
@@ -250,8 +258,8 @@ CSS = """
   --well-header: #9dc3e6; --well-row: #deebf7;
   --odd-header: #a9d18e; --odd-row: #e2f0d9;
   --even-header: #f4b183; --even-row: #fbe5d6;
-  --ci-odd-header: #b4a7d6; --ci-odd-row: #ede7f6;
-  --ci-even-header: #ea9999; --ci-even-row: #fbe4e4;
+  --sb-odd-header: #b4a7d6; --sb-odd-row: #ede7f6;
+  --sb-even-header: #ea9999; --sb-even-row: #fbe4e4;
   --banner-text: #002060;
   --ink: #1f2328; --border: #c9c9c9;
 }
@@ -270,21 +278,21 @@ main { max-width: 980px; margin: 1.5rem auto; padding: 0 1rem; }
 .zone-general .subcat-title { background: var(--general-header); }
 .zone-well .subcat-title { background: var(--well-header); }
 
-.production-instance { border: 1px solid var(--border); border-radius: 6px; overflow: hidden; background: #fff; margin-bottom: 1.25rem; }
-.production-instance.interval-odd > .interval-banner .zone-title { background: var(--odd-header); }
-.production-instance.interval-even > .interval-banner .zone-title { background: var(--even-header); }
-.production-instance.interval-odd > .own-fields .subcat-title { background: var(--odd-header); }
-.production-instance.interval-even > .own-fields .subcat-title { background: var(--even-header); }
-.production-instance.interval-odd > .own-fields .field-row { background: var(--odd-row); }
-.production-instance.interval-even > .own-fields .field-row { background: var(--even-row); }
+.completion-instance { border: 1px solid var(--border); border-radius: 6px; overflow: hidden; background: #fff; margin-bottom: 1.25rem; }
+.completion-instance.interval-odd > .interval-banner .zone-title { background: var(--odd-header); }
+.completion-instance.interval-even > .interval-banner .zone-title { background: var(--even-header); }
+.completion-instance.interval-odd > .own-fields .subcat-title { background: var(--odd-header); }
+.completion-instance.interval-even > .own-fields .subcat-title { background: var(--even-header); }
+.completion-instance.interval-odd > .own-fields .field-row { background: var(--odd-row); }
+.completion-instance.interval-even > .own-fields .field-row { background: var(--even-row); }
 
-.completion-instance { border: 1px solid var(--border); border-radius: 6px; overflow: hidden; background: #fff; margin-bottom: 1rem; }
-.completion-instance.interval-odd > .interval-banner .zone-title { background: var(--ci-odd-header); }
-.completion-instance.interval-even > .interval-banner .zone-title { background: var(--ci-even-header); }
-.completion-instance.interval-odd .subcat-title { background: var(--ci-odd-header); }
-.completion-instance.interval-even .subcat-title { background: var(--ci-even-header); }
-.completion-instance.interval-odd .field-row { background: var(--ci-odd-row); }
-.completion-instance.interval-even .field-row { background: var(--ci-even-row); }
+.sand-body-instance { border: 1px solid var(--border); border-radius: 6px; overflow: hidden; background: #fff; margin-bottom: 1rem; }
+.sand-body-instance.interval-odd > .interval-banner .zone-title { background: var(--sb-odd-header); }
+.sand-body-instance.interval-even > .interval-banner .zone-title { background: var(--sb-even-header); }
+.sand-body-instance.interval-odd .subcat-title { background: var(--sb-odd-header); }
+.sand-body-instance.interval-even .subcat-title { background: var(--sb-even-header); }
+.sand-body-instance.interval-odd .field-row { background: var(--sb-odd-row); }
+.sand-body-instance.interval-even .field-row { background: var(--sb-even-row); }
 
 .field-grid { display: flex; flex-direction: column; }
 .field-row { display: grid; grid-template-columns: minmax(180px, 1fr) minmax(220px, 1.4fr) 90px 74px; gap: .75rem; align-items: center; padding: .4rem 1rem; border-top: 1px solid #eee; }
@@ -322,16 +330,16 @@ textarea { resize: vertical; }
 .interval-banner .zone-title { flex: 1; }
 .remove-interval-btn { margin-right: 1rem; background: #b23; color: #fff; border: none; border-radius: 4px; padding: .3rem .7rem; cursor: pointer; font-size: .8rem; }
 .remove-interval-btn:hover { background: #8f1c1c; }
-#production-intervals-toolbar { display: flex; justify-content: space-between; align-items: center; margin: 1.5rem 0 .75rem; }
-#production-intervals-toolbar h2 { margin: 0; font-size: 1.1rem; }
-#add-production-btn { background: var(--header-bg); color: #fff; border: none; border-radius: 4px; padding: .5rem 1rem; cursor: pointer; font-size: .9rem; }
-#add-production-btn:disabled { background: #9aa; cursor: not-allowed; }
-.completion-nest { margin: .75rem 0 0; padding: .5rem 0 .75rem 1rem; border-left: 3px solid var(--border); }
-.completion-intervals-toolbar { display: flex; justify-content: space-between; align-items: center; margin: 0 1rem .6rem 0; }
-.completion-intervals-toolbar h3 { margin: 0; font-size: .95rem; }
-.add-completion-btn { background: var(--header-bg); color: #fff; border: none; border-radius: 4px; padding: .4rem .8rem; cursor: pointer; font-size: .82rem; }
-.add-completion-btn:disabled { background: #9aa; cursor: not-allowed; }
-.completion-intervals-container { display: flex; flex-direction: column; gap: .75rem; }
+#completion-intervals-toolbar { display: flex; justify-content: space-between; align-items: center; margin: 1.5rem 0 .75rem; }
+#completion-intervals-toolbar h2 { margin: 0; font-size: 1.1rem; }
+#add-completion-btn { background: var(--header-bg); color: #fff; border: none; border-radius: 4px; padding: .5rem 1rem; cursor: pointer; font-size: .9rem; }
+#add-completion-btn:disabled { background: #9aa; cursor: not-allowed; }
+.sand-body-nest { margin: .75rem 0 0; padding: .5rem 0 .75rem 1rem; border-left: 3px solid var(--border); }
+.sand-bodies-toolbar { display: flex; justify-content: space-between; align-items: center; margin: 0 1rem .6rem 0; }
+.sand-bodies-toolbar h3 { margin: 0; font-size: .95rem; }
+.add-sand-body-btn { background: var(--header-bg); color: #fff; border: none; border-radius: 4px; padding: .4rem .8rem; cursor: pointer; font-size: .82rem; }
+.add-sand-body-btn:disabled { background: #9aa; cursor: not-allowed; }
+.sand-bodies-container { display: flex; flex-direction: column; gap: .75rem; }
 .export-bar { position: sticky; bottom: 0; background: #fff; border-top: 2px solid var(--header-bg); padding: .75rem 1rem; display: flex; gap: .75rem; justify-content: flex-end; max-width: 980px; margin: 0 auto; }
 .export-bar button { background: var(--header-bg); color: #fff; border: none; border-radius: 4px; padding: .55rem 1.1rem; cursor: pointer; font-size: .9rem; }
 .export-bar button:hover { opacity: .9; }
@@ -339,8 +347,8 @@ textarea { resize: vertical; }
 
 JS = """
 (function () {
-  const MAX_PRODUCTION = __MAX_PRODUCTION__;
   const MAX_COMPLETION = __MAX_COMPLETION__;
+  const MAX_SAND_BODY = __MAX_SAND_BODY__;
   const wellSection = document.getElementById('well-section');
 
   function findParamField(root, paramName) {
@@ -424,36 +432,36 @@ JS = """
     });
   }
 
-  function wireCompletionRepeater(productionSection) {
+  function wireSandBodyRepeater(completionSection) {
     const repeater = setupRepeater({
-      container: productionSection.querySelector('.completion-intervals-container'),
-      template: productionSection.querySelector('.completion-interval-template'),
-      addBtn: productionSection.querySelector('.add-completion-btn'),
-      maxCount: MAX_COMPLETION,
-      labelSingular: 'Completion Interval',
+      container: completionSection.querySelector('.sand-bodies-container'),
+      template: completionSection.querySelector('.sand-body-template'),
+      addBtn: completionSection.querySelector('.add-sand-body-btn'),
+      maxCount: MAX_SAND_BODY,
+      labelSingular: 'Sand Body',
     });
     repeater.add();
-    wireApplyButton(productionSection.querySelector('.own-fields'), (n) => {
-      const target = Math.min(n, MAX_COMPLETION);
+    wireApplyButton(completionSection.querySelector('.own-fields'), (n) => {
+      const target = Math.min(n, MAX_SAND_BODY);
       while (repeater.count < target) repeater.add();
     });
   }
 
-  const productionRepeater = setupRepeater({
-    container: document.getElementById('production-intervals-container'),
-    template: document.getElementById('production-interval-template'),
-    addBtn: document.getElementById('add-production-btn'),
-    maxCount: MAX_PRODUCTION,
-    labelSingular: 'Production Interval',
-    onAdd: wireCompletionRepeater,
+  const completionRepeater = setupRepeater({
+    container: document.getElementById('completion-intervals-container'),
+    template: document.getElementById('completion-interval-template'),
+    addBtn: document.getElementById('add-completion-btn'),
+    maxCount: MAX_COMPLETION,
+    labelSingular: 'Completion Interval',
+    onAdd: wireSandBodyRepeater,
   });
 
   wellSection.addEventListener('change', () => evaluateVisibility(wellSection));
   evaluateVisibility(wellSection);
-  productionRepeater.add();
+  completionRepeater.add();
   wireApplyButton(wellSection, (n) => {
-    const target = Math.min(n, MAX_PRODUCTION);
-    while (productionRepeater.count < target) productionRepeater.add();
+    const target = Math.min(n, MAX_COMPLETION);
+    while (completionRepeater.count < target) completionRepeater.add();
   });
 
   // ---- export ----
@@ -500,41 +508,41 @@ JS = """
 
   function collectData() {
     const well = collectBucket(wellSection);
-    const production_intervals = [];
-    document.getElementById('production-intervals-container').querySelectorAll(':scope > .production-instance').forEach((prodSection) => {
-      const fields = collectBucket(prodSection.querySelector('.own-fields'));
-      const completion_intervals = [];
-      prodSection.querySelectorAll(':scope > .completion-nest > .completion-intervals-container > .completion-instance').forEach((compSection) => {
-        completion_intervals.push(collectBucket(compSection));
+    const completion_intervals = [];
+    document.getElementById('completion-intervals-container').querySelectorAll(':scope > .completion-instance').forEach((compSection) => {
+      const fields = collectBucket(compSection.querySelector('.own-fields'));
+      const sand_bodies = [];
+      compSection.querySelectorAll(':scope > .sand-body-nest > .sand-bodies-container > .sand-body-instance').forEach((sbSection) => {
+        sand_bodies.push(collectBucket(sbSection));
       });
-      production_intervals.push({ fields, completion_intervals });
+      completion_intervals.push({ fields, sand_bodies });
     });
-    return { generated_at: new Date().toISOString(), well, production_intervals };
+    return { generated_at: new Date().toISOString(), well, completion_intervals };
   }
 
   function collectCsvRows() {
     const rows = [];
-    const pushRows = (root, prodIdx, compIdx) => {
+    const pushRows = (root, compIdx, sbIdx) => {
       walkVisibleFields(root, (sub, fr) => {
         const val = readFieldValue(fr);
         if (val === null) return;
         rows.push([sub.dataset.category, sub.dataset.subcategory, fieldParam(fr),
-          prodIdx, compIdx, Array.isArray(val) ? val.join(' / ') : val, fr.querySelector('.field-unit').textContent]);
+          compIdx, sbIdx, Array.isArray(val) ? val.join(' / ') : val, fr.querySelector('.field-unit').textContent]);
       });
     };
     pushRows(wellSection, '', '');
-    document.getElementById('production-intervals-container').querySelectorAll(':scope > .production-instance').forEach((prodSection) => {
-      const prodIdx = prodSection.dataset.intervalIndex;
-      pushRows(prodSection.querySelector('.own-fields'), prodIdx, '');
-      prodSection.querySelectorAll(':scope > .completion-nest > .completion-intervals-container > .completion-instance').forEach((compSection) => {
-        pushRows(compSection, prodIdx, compSection.dataset.intervalIndex);
+    document.getElementById('completion-intervals-container').querySelectorAll(':scope > .completion-instance').forEach((compSection) => {
+      const compIdx = compSection.dataset.intervalIndex;
+      pushRows(compSection.querySelector('.own-fields'), compIdx, '');
+      compSection.querySelectorAll(':scope > .sand-body-nest > .sand-bodies-container > .sand-body-instance').forEach((sbSection) => {
+        pushRows(sbSection, compIdx, sbSection.dataset.intervalIndex);
       });
     });
     return rows;
   }
 
   function toCsv(rows) {
-    const header = ['Category', 'Subcategory', 'Parameter', 'Production Interval', 'Completion Interval', 'Value', 'Unit'];
+    const header = ['Category', 'Subcategory', 'Parameter', 'Completion Interval', 'Sand Body', 'Value', 'Unit'];
     const escCell = (v) => '"' + String(v).replace(/"/g, '""') + '"';
     return [header, ...rows].map((r) => r.map(escCell).join(',')).join('\\r\\n');
   }
@@ -558,11 +566,11 @@ JS = """
 """
 
 
-def render_html(model: dict, max_production: int = DEFAULT_MAX_PRODUCTION,
-                 max_completion: int = DEFAULT_MAX_COMPLETION) -> str:
+def render_html(model: dict, max_completion: int = DEFAULT_MAX_COMPLETION,
+                 max_sand_bodies: int = DEFAULT_MAX_SAND_BODY) -> str:
     well_html = render_well_section(model)
-    production_template_html = render_production_template(model)
-    js = JS.replace("__MAX_PRODUCTION__", str(max_production)).replace("__MAX_COMPLETION__", str(max_completion))
+    completion_template_html = render_completion_template(model)
+    js = JS.replace("__MAX_COMPLETION__", str(max_completion)).replace("__MAX_SAND_BODY__", str(max_sand_bodies))
 
     return f"""<!doctype html>
 <html lang="en">
@@ -580,12 +588,12 @@ def render_html(model: dict, max_production: int = DEFAULT_MAX_PRODUCTION,
 <main>
   <form id="sand-form" onsubmit="return false;">
     {well_html}
-    <div id="production-intervals-toolbar">
-      <h2>Production Intervals</h2>
-      <button type="button" id="add-production-btn">+ Add Production Interval</button>
+    <div id="completion-intervals-toolbar">
+      <h2>Completion Intervals</h2>
+      <button type="button" id="add-completion-btn">+ Add Completion Interval</button>
     </div>
-    <div id="production-intervals-container"></div>
-    {production_template_html}
+    <div id="completion-intervals-container"></div>
+    {completion_template_html}
   </form>
 </main>
 <div class="export-bar">
@@ -602,10 +610,10 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("input", nargs="?", default=DEFAULT_INPUT, help="Path to the dictionary xlsx file")
     parser.add_argument("output", nargs="?", default=DEFAULT_OUTPUT, help="Path to write the generated HTML form")
-    parser.add_argument("--max-production-intervals", type=int, default=DEFAULT_MAX_PRODUCTION,
-                         help="Maximum number of Production Interval blocks a user can add")
     parser.add_argument("--max-completion-intervals", type=int, default=DEFAULT_MAX_COMPLETION,
-                         help="Maximum number of Completion Interval blocks per Production Interval")
+                         help="Maximum number of Completion Interval blocks a user can add")
+    parser.add_argument("--max-sand-bodies", type=int, default=DEFAULT_MAX_SAND_BODY,
+                         help="Maximum number of Sand Body blocks per Completion Interval")
     args = parser.parse_args()
 
     input_path = Path(args.input)
@@ -616,17 +624,17 @@ def main() -> None:
     if not rows:
         raise SystemExit("No rows found in the dictionary sheet.")
     model = build_model(rows)
-    html_out = render_html(model, max_production=args.max_production_intervals,
-                            max_completion=args.max_completion_intervals)
+    html_out = render_html(model, max_completion=args.max_completion_intervals,
+                            max_sand_bodies=args.max_sand_bodies)
 
     output_path = Path(args.output)
     output_path.write_text(html_out, encoding="utf-8")
     well_subcats = sum(len(v) for v in model["well"].values())
-    production_subcats = sum(len(v) for v in model["production"].values())
     completion_subcats = sum(len(v) for v in model["completion"].values())
+    sand_body_subcats = sum(len(v) for v in model["sand_body"].values())
     print(f"Wrote {output_path} ({len(rows)} parameters: "
-          f"{well_subcats} well-scope, {production_subcats} production-interval-scope, "
-          f"{completion_subcats} completion-interval-scope subcategories).")
+          f"{well_subcats} well-scope, {completion_subcats} completion-interval-scope, "
+          f"{sand_body_subcats} sand-body-scope subcategories).")
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
-"""The `completion_interval` table -- one row per Completion Interval (sand
-body) within a production interval, plus the ~82 dictionary-driven columns
-generated from MASTER.xlsx's Completion-Interval-scope parameters (see
+"""The `completion_interval` table -- one row per Completion Interval within
+a well, plus the dictionary-driven columns generated from MASTER.xlsx's
+Completion-Interval-scope parameters (see
 db/generated/completion_interval_columns.py, never hand-edited).
 """
 from __future__ import annotations
@@ -15,22 +15,25 @@ completion_interval_table = Table(
     "completion_interval",
     Base.metadata,
     Column("id", Integer, primary_key=True),
-    Column(
-        "production_interval_id",
-        Integer,
-        ForeignKey("production_interval.id", ondelete="CASCADE"),
-        nullable=False,
-        index=True,
-    ),
+    Column("well_id", Integer, ForeignKey("well.id", ondelete="CASCADE"), nullable=False, index=True),
+    # 1-based submission order within the well. NOT used for referential
+    # integrity -- purely so GET can reconstruct the same "Completion
+    # Interval 1, 2, ..." order the form submitted.
     Column("ordinal", Integer, nullable=False),
     Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
     Column("updated_at", DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()),
     *COMPLETION_INTERVAL_COLUMNS,
-    UniqueConstraint("production_interval_id", "ordinal", name="uq_completion_interval_pi_ordinal"),
+    UniqueConstraint("well_id", "ordinal", name="uq_completion_interval_well_ordinal"),
 )
 
 
 class CompletionInterval(Base):
     __table__ = completion_interval_table
 
-    production_interval = relationship("ProductionInterval", back_populates="completion_intervals")
+    well = relationship("Well", back_populates="completion_intervals")
+    sand_bodies = relationship(
+        "SandBody",
+        back_populates="completion_interval",
+        cascade="all, delete-orphan",
+        order_by="SandBody.ordinal",
+    )
