@@ -244,20 +244,33 @@ head` --> run tests --> commit the `MASTER.xlsx` diff + regenerated files + migr
 together. CI re-runs the two regeneration commands and fails the build on any diff in
 the committed generated files (the "codegen drift check").
 
-The initial migration (`db/migrations/versions/..._initial_schema.py`) is one
-exception to "always use `--autogenerate`": it was authored without a live Postgres
-available and delegates to `Base.metadata.create_all()`/`drop_all()` instead of
-explicit `op.create_table()` calls, guaranteeing consistency with the models by
-construction. The second migration (`..._restructure_completion_interval_sand_body.py`,
-which replaced `production_interval`/`completion_interval` with
-`completion_interval`/`sand_body` when the scope hierarchy was renamed) is the other
-exception, for the same reason (no live Postgres to diff against) plus a second one:
-the change is a genuine restructuring -- both parent/child relationships and column
-sets changed -- not something `--autogenerate` could express as a rename even with a
-live database, so it explicitly drops the old-shape tables and creates the new-shape
-ones rather than attempting an in-place data migration (there's no production data yet
-to preserve -- see "Path to production"). Every migration after these two should go
-back to the normal `--autogenerate` workflow.
+The initial migration (`db/migrations/versions/..._initial_schema.py`) and the second
+migration (`..._restructure_completion_interval_sand_body.py`, which replaced
+`production_interval`/`completion_interval` with `completion_interval`/`sand_body` when
+the scope hierarchy was renamed) are both exceptions to "always use `--autogenerate`":
+both were authored without a live Postgres available to diff against, and the second is
+also a genuine restructuring -- both parent/child relationships and column sets
+changed -- not something `--autogenerate` could express as a rename even with a live
+database, so it explicitly drops the old-shape tables and creates the new-shape ones
+rather than attempting an in-place data migration (there's no production data yet to
+preserve -- see "Path to production"). Every migration after these two should go back
+to the normal `--autogenerate` workflow.
+
+Both migrations use explicit `op.create_table()`/`op.drop_table()`/`op.add_column()`
+calls with literal column lists, **not** `Base.metadata.create_all()`/`drop_all()`
+against the live `db.models`. The initial migration originally did use
+`create_all()`/`drop_all()` (justified the same way -- no live Postgres to hand-transcribe
+~150 columns against), but that turned out to be a real bug once a second migration
+changed the schema: `Base.metadata` is a shared, mutable registry reflecting whatever
+`db.models` *currently* says, not a frozen snapshot of what the initial migration
+originally created, so once `db.models` moved to the new shape, `create_all()` started
+silently building the *new* shape in the initial migration too -- skipping the old shape
+entirely and making the second migration's `DROP TABLE` calls fail against dependents
+(e.g. `sand_body`) that shouldn't have existed yet at that point in the chain. Lesson:
+migrations must be frozen historical records independent of current code, so
+`create_all()`/`drop_all()`-against-live-metadata is only safe for a migration that will
+never be followed by another one that changes the models -- never assume that in
+advance.
 
 ### Backend API (`backend/`)
 
