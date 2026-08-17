@@ -803,19 +803,22 @@
     "table": "completion_interval",
     "unit": ""
   },
-  "completion_interval::Drilling::Drilling Details::Mud PSD": {
+  "completion_interval::Drilling::Drilling Details::Mud PSD D10/D25/D40/D50/D75/D90": {
     "category": "Drilling",
     "db_columns": [
-      "mud_psd_value_1",
-      "mud_psd_value_2",
-      "mud_psd_value_3"
+      "mud_psd_d10",
+      "mud_psd_d25",
+      "mud_psd_d40",
+      "mud_psd_d50",
+      "mud_psd_d75",
+      "mud_psd_d90"
     ],
     "db_type": "Numeric",
     "kind": "multi_number",
     "max_value": null,
     "min_value": null,
     "options": [],
-    "parameter": "Mud PSD",
+    "parameter": "Mud PSD D10/D25/D40/D50/D75/D90",
     "required": false,
     "scope": "completion_interval",
     "step": null,
@@ -1200,6 +1203,29 @@
     "table": "sand_body",
     "unit": ""
   },
+  "sand_body::Reservoir Characterization::Reservoir Rock and Fluid Properties::PSD D10/D25/D40/D50/D75/D90": {
+    "category": "Reservoir Characterization",
+    "db_columns": [
+      "psd_d10",
+      "psd_d25",
+      "psd_d40",
+      "psd_d50",
+      "psd_d75",
+      "psd_d90"
+    ],
+    "db_type": "Numeric",
+    "kind": "multi_number",
+    "max_value": null,
+    "min_value": null,
+    "options": [],
+    "parameter": "PSD D10/D25/D40/D50/D75/D90",
+    "required": false,
+    "scope": "sand_body",
+    "step": null,
+    "subcategory": "Reservoir Rock and Fluid Properties",
+    "table": "sand_body",
+    "unit": "microns"
+  },
   "sand_body::Reservoir Characterization::Reservoir Rock and Fluid Properties::PSD Measurement Method": {
     "category": "Reservoir Characterization",
     "db_columns": [
@@ -1220,28 +1246,6 @@
     "subcategory": "Reservoir Rock and Fluid Properties",
     "table": "sand_body",
     "unit": ""
-  },
-  "sand_body::Reservoir Characterization::Reservoir Rock and Fluid Properties::Particle Size Distribution D10/D25/D40/D50/D75/D90": {
-    "category": "Reservoir Characterization",
-    "db_columns": [
-      "particle_size_distribution_value_1",
-      "particle_size_distribution_value_2",
-      "particle_size_distribution_value_3",
-      "particle_size_distribution_value_4",
-      "particle_size_distribution_value_5"
-    ],
-    "db_type": "Numeric",
-    "kind": "multi_number",
-    "max_value": null,
-    "min_value": null,
-    "options": [],
-    "parameter": "Particle Size Distribution D10/D25/D40/D50/D75/D90",
-    "required": false,
-    "scope": "sand_body",
-    "step": null,
-    "subcategory": "Reservoir Rock and Fluid Properties",
-    "table": "sand_body",
-    "unit": "microns"
   },
   "sand_body::Reservoir Characterization::Reservoir Rock and Fluid Properties::Permeability": {
     "category": "Reservoir Characterization",
