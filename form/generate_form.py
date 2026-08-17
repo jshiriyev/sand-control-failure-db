@@ -180,9 +180,10 @@ def render_field_row(row: ParamRow, param_show: dict, param_hide: dict) -> str:
     role = COUNTER_ROLES.get(row.parameter)
     action_html = (f'<span class="field-action"><button type="button" class="apply-count-btn" '
                     f'data-role="{role}">Apply</button></span>' if role else '<span class="field-action"></span>')
+    comment_html = f'<input type="text" class="field-comment" data-comment-for="{esc(row.parameter)}" placeholder="Comment">'
     return (f'<label class="field-row"{attrs}>'
             f'<span class="field-name">{esc(row.parameter)}{req_mark}{tip_html}</span>'
-            f'{control}{unit_html}{action_html}</label>')
+            f'{control}{unit_html}{action_html}{comment_html}</label>')
 
 
 def render_subcategory(category: str, subcategory: str, rows: list[ParamRow], model: dict) -> str:
@@ -268,7 +269,7 @@ body { font-family: Arial, Helvetica, sans-serif; margin: 0; padding: 0 0 4rem; 
 header.page-header { background: var(--header-bg); color: var(--header-text); padding: 1.25rem 1.5rem; }
 header.page-header h1 { margin: 0 0 .25rem; font-size: 1.4rem; }
 header.page-header p { margin: 0; opacity: .85; font-size: .9rem; }
-main { max-width: 980px; margin: 1.5rem auto; padding: 0 1rem; }
+main { max-width: 1280px; margin: 1.5rem auto; padding: 0 1rem; }
 .zone { margin-bottom: 1.25rem; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; background: #fff; }
 .zone-title { margin: 0; padding: .6rem 1rem; font-size: 1.05rem; font-weight: bold; color: var(--banner-text); }
 .zone-general > .zone-title { background: var(--general-header); }
@@ -295,7 +296,7 @@ main { max-width: 980px; margin: 1.5rem auto; padding: 0 1rem; }
 .sand-body-instance.interval-even .field-row { background: var(--sb-even-row); }
 
 .field-grid { display: flex; flex-direction: column; }
-.field-row { display: grid; grid-template-columns: minmax(180px, 1fr) minmax(220px, 1.4fr) 90px 74px; gap: .75rem; align-items: center; padding: .4rem 1rem; border-top: 1px solid #eee; }
+.field-row { display: grid; grid-template-columns: minmax(180px, 1fr) minmax(220px, 1.4fr) 90px 74px minmax(160px, 1fr); gap: .75rem; align-items: center; padding: .4rem 1rem; border-top: 1px solid #eee; }
 .zone-general .field-row { background: var(--general-row); }
 .zone-well .field-row { background: var(--well-row); }
 .field-name { font-size: .88rem; display: flex; align-items: center; gap: .3rem; }
@@ -323,9 +324,10 @@ select, input[type=text], input[type=number], input[type=date], textarea {
   width: 100%; padding: .35rem .5rem; border: 1px solid #aaa; border-radius: 4px; font: inherit; background: #fff;
 }
 textarea { resize: vertical; }
-.multi-number { display: flex; gap: .5rem; flex-wrap: wrap; }
-.mn-item { display: flex; flex-direction: column; flex: 1 1 80px; }
-.mn-label { font-size: .72rem; color: #555; }
+.multi-number { display: flex; gap: .25rem; flex-wrap: nowrap; }
+.mn-item { display: flex; flex-direction: column; flex: 1 1 0; min-width: 0; }
+.mn-label { font-size: .68rem; color: #555; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+input.mn-input { padding: .35rem .25rem; text-align: center; }
 .interval-banner { display: flex; align-items: center; justify-content: space-between; }
 .interval-banner .zone-title { flex: 1; }
 .remove-interval-btn { margin-right: 1rem; background: #b23; color: #fff; border: none; border-radius: 4px; padding: .3rem .7rem; cursor: pointer; font-size: .8rem; }
@@ -340,7 +342,7 @@ textarea { resize: vertical; }
 .add-sand-body-btn { background: var(--header-bg); color: #fff; border: none; border-radius: 4px; padding: .4rem .8rem; cursor: pointer; font-size: .82rem; }
 .add-sand-body-btn:disabled { background: #9aa; cursor: not-allowed; }
 .sand-bodies-container { display: flex; flex-direction: column; gap: .75rem; }
-.export-bar { position: sticky; bottom: 0; background: #fff; border-top: 2px solid var(--header-bg); padding: .75rem 1rem; display: flex; gap: .75rem; justify-content: flex-end; max-width: 980px; margin: 0 auto; }
+.export-bar { position: sticky; bottom: 0; background: #fff; border-top: 2px solid var(--header-bg); padding: .75rem 1rem; display: flex; gap: .75rem; justify-content: flex-end; max-width: 1280px; margin: 0 auto; }
 .export-bar button { background: var(--header-bg); color: #fff; border: none; border-radius: 4px; padding: .55rem 1.1rem; cursor: pointer; font-size: .9rem; }
 .export-bar button:hover { opacity: .9; }
 """
@@ -520,14 +522,21 @@ JS = """
     return { generated_at: new Date().toISOString(), well, completion_intervals };
   }
 
+  function fieldComment(fieldRow) {
+    const input = fieldRow.querySelector('.field-comment');
+    return input ? input.value : '';
+  }
+
   function collectCsvRows() {
     const rows = [];
     const pushRows = (root, compIdx, sbIdx) => {
       walkVisibleFields(root, (sub, fr) => {
         const val = readFieldValue(fr);
-        if (val === null) return;
+        const comment = fieldComment(fr);
+        if (val === null && comment === '') return;
         rows.push([sub.dataset.category, sub.dataset.subcategory, fieldParam(fr),
-          compIdx, sbIdx, Array.isArray(val) ? val.join(' / ') : val, fr.querySelector('.field-unit').textContent]);
+          compIdx, sbIdx, Array.isArray(val) ? val.join(' / ') : (val === null ? '' : val),
+          fr.querySelector('.field-unit').textContent, comment]);
       });
     };
     pushRows(wellSection, '', '');
@@ -542,7 +551,7 @@ JS = """
   }
 
   function toCsv(rows) {
-    const header = ['Category', 'Subcategory', 'Parameter', 'Completion Interval', 'Sand Body', 'Value', 'Unit'];
+    const header = ['Category', 'Subcategory', 'Parameter', 'Completion Interval', 'Sand Body', 'Value', 'Unit', 'Comment'];
     const escCell = (v) => '"' + String(v).replace(/"/g, '""') + '"';
     return [header, ...rows].map((r) => r.map(escCell).join(',')).join('\\r\\n');
   }
