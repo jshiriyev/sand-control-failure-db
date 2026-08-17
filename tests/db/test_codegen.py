@@ -50,11 +50,13 @@ def test_field_registry_has_one_entry_per_dictionary_row():
 
 
 def test_multi_number_fields_expand_to_multiple_columns():
-    # "Mud PSD"'s Unit cell isn't slash-delimited and its Parameter name has
-    # no trailing D10/D50/D90-style suffix, so its sub-labels fall back to
-    # the generic "Value 1", "Value 2", ... convention (see
-    # dictionary.parsing._derive_multi_labels).
+    # "Mud PSD D10/D25/D40/D50/D75/D90"'s Parameter name carries a trailing
+    # D-labeled suffix, so its sub-labels are derived from that suffix (see
+    # dictionary.parsing._derive_multi_labels) rather than falling back to
+    # the generic "Value 1", "Value 2", ... convention.
     registry = json.loads((GENERATED_DIR / "field_registry.json").read_text(encoding="utf-8"))
-    entry = registry["completion_interval::Drilling::Drilling Details::Mud PSD"]
-    assert entry["db_columns"] == ["mud_psd_value_1", "mud_psd_value_2", "mud_psd_value_3"]
+    entry = registry["completion_interval::Drilling::Drilling Details::Mud PSD D10/D25/D40/D50/D75/D90"]
+    assert entry["db_columns"] == [
+        "mud_psd_d10", "mud_psd_d25", "mud_psd_d40", "mud_psd_d50", "mud_psd_d75", "mud_psd_d90",
+    ]
     assert entry["db_type"] == "Numeric"

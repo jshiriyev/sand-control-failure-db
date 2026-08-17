@@ -80,7 +80,9 @@ def test_submit_out_of_range_number_returns_422(client, seeded_org):
 def test_submit_multi_number_splits_into_columns(client, seeded_org, db_session):
     _, token = seeded_org
     payload = copy.deepcopy(_minimal_valid_payload())
-    payload["completion_intervals"][0]["fields"] = {"Drilling": {"Drilling Details": {"Mud PSD": [10, 50, 90]}}}
+    payload["completion_intervals"][0]["fields"] = {
+        "Drilling": {"Drilling Details": {"Mud PSD D10/D25/D40/D50/D75/D90": [10, 25, 40, 50, 75, 90]}}
+    }
     resp = client.post("/records", json=payload, headers=_auth(token))
     assert resp.status_code == 201, resp.text
 
@@ -88,9 +90,12 @@ def test_submit_multi_number_splits_into_columns(client, seeded_org, db_session)
 
     well = db_session.get(Well, resp.json()["id"])
     ci = well.completion_intervals[0]
-    assert float(ci.mud_psd_value_1) == 10
-    assert float(ci.mud_psd_value_2) == 50
-    assert float(ci.mud_psd_value_3) == 90
+    assert float(ci.mud_psd_d10) == 10
+    assert float(ci.mud_psd_d25) == 25
+    assert float(ci.mud_psd_d40) == 40
+    assert float(ci.mud_psd_d50) == 50
+    assert float(ci.mud_psd_d75) == 75
+    assert float(ci.mud_psd_d90) == 90
 
 
 def test_submit_yes_no_normalizes_to_boolean(client, seeded_org, db_session):
