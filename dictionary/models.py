@@ -10,6 +10,7 @@ SAND_BODY_SCOPE = "Sand Body {id}"
 
 @dataclass
 class ParamRow:
+    row_number: int
     scope: str
     category: str
     subcategory: str
@@ -31,6 +32,9 @@ class FieldSpec:
     max_value: float | None = None
     step: float | None = None
     required: bool = False
+    min_length: int | None = None
+    max_length: int | None = None
+    pattern: str | None = None  # HTML5-compatible regex, e.g. r"^[A-Za-z0-9]+$"
     multi_labels: list[str] = field(default_factory=list)
     # Parallel to multi_labels -- per-sub-value min/max pulled from that
     # sub-value's own spec (each sub-value in a multi-number cell carries its

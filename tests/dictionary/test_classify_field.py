@@ -7,7 +7,7 @@ from dictionary.models import ParamRow
 
 def _row(**overrides) -> ParamRow:
     base = dict(
-        scope="Well", category="C", subcategory="S", parameter="P",
+        row_number=1, scope="Well", category="C", subcategory="S", parameter="P",
         input_type="Text", unit="", affected_subcategory="", affected_parameter="",
         data_validation="", tooltip="t", user_comment="",
     )
@@ -35,6 +35,13 @@ def test_boolean_falls_back_to_yes_no_when_data_validation_blank():
 def test_short_date():
     spec = classify_field(_row(input_type="Short Date", data_validation='{"Short Date"}'))
     assert spec.kind == "date"
+    assert spec.required is False
+
+
+def test_short_date_required_flows_through():
+    spec = classify_field(_row(input_type="Short Date", data_validation='{"Short Date": {"required": True}}'))
+    assert spec.kind == "date"
+    assert spec.required is True
 
 
 def test_number_decimal_unconstrained():
@@ -93,3 +100,53 @@ def test_multi_number_text():
 def test_unrecognized_input_type_defaults_to_text():
     spec = classify_field(_row(input_type="Something New"))
     assert spec.kind == "text"
+
+
+def test_dropdown_menu_options_nested_under_options_key():
+    # Current MASTER.xlsx shape: options live under "options" alongside other
+    # modifiers, e.g. {"List": {"options": [...], "required": True}}.
+    spec = classify_field(_row(
+        input_type="Dropdown Menu", data_validation='{"List": {"options": ["A", "B"], "required": True}}',
+    ))
+    assert spec.kind == "select"
+    assert spec.options == ["A", "B"]
+    assert spec.required is True
+
+
+def test_boolean_options_nested_under_options_key():
+    spec = classify_field(_row(
+        input_type="Boolean", data_validation='{"List": {"options": ["Used", "Not used"]}}',
+    ))
+    assert spec.options == ["Used", "Not used"]
+
+
+def test_dropdown_menu_required_flows_through():
+    spec = classify_field(_row(
+        input_type="Dropdown Menu", data_validation='{"List": {"required": True, "options": ["A", "B"]}}',
+    ))
+    assert spec.required is True
+
+
+def test_boolean_required_flows_through():
+    spec = classify_field(_row(
+        input_type="Boolean", data_validation='{"List": {"required": True, "options": ["Yes", "No"]}}',
+    ))
+    assert spec.required is True
+
+
+def test_plain_text_required_is_honored():
+    spec = classify_field(_row(input_type="Text", data_validation='{"Any Value": {"required": True}}'))
+    assert spec.kind == "text"
+    assert spec.required is True
+
+
+def test_text_length_with_named_pattern():
+    spec = classify_field(_row(
+        input_type="Text",
+        data_validation='{"Text": {"length": 7, "pattern": "alphanumeric", "required": True}}',
+    ))
+    assert spec.kind == "text"
+    assert spec.min_length == 7
+    assert spec.max_length is None
+    assert spec.pattern == r"^[A-Za-z0-9]+$"
+    assert spec.required is True

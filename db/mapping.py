@@ -7,6 +7,7 @@ exactly one place that knows what a bucket means.
 from __future__ import annotations
 
 import json
+import re
 from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
@@ -58,7 +59,17 @@ def _coerce(entry: dict, leaf_key: str, value: Any, errors: list[str]) -> dict[s
         return {columns[0]: text_value}
 
     if kind == "text":
-        return {columns[0]: str(value)}
+        text_value = str(value)
+        if entry.get("min_length") is not None and len(text_value) < entry["min_length"]:
+            errors.append(f"{leaf_key}: {value!r} is shorter than the minimum length {entry['min_length']}")
+            return {}
+        if entry.get("max_length") is not None and len(text_value) > entry["max_length"]:
+            errors.append(f"{leaf_key}: {value!r} is longer than the maximum length {entry['max_length']}")
+            return {}
+        if entry.get("pattern") and not re.match(entry["pattern"], text_value):
+            errors.append(f"{leaf_key}: {value!r} does not match the required format")
+            return {}
+        return {columns[0]: text_value}
 
     if kind == "number":
         number = _to_number(value, db_type)

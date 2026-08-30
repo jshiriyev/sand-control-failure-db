@@ -17,12 +17,13 @@ def load_dictionary(xlsx_path: Path) -> list[ParamRow]:
                           f"Available sheets: {', '.join(wb.sheetnames)}")
     ws = wb[SHEET_NAME]
     rows = []
-    for r in ws.iter_rows(min_row=2, max_col=11, values_only=True):
-        (scope, category, subcategory, parameter, input_type, unit,
+    for r in ws.iter_rows(min_row=2, max_col=12, values_only=True):
+        (row_number, scope, category, subcategory, parameter, input_type, unit,
          aff_sub, aff_param, data_validation, tooltip, user_comment) = r
         if not parameter:
             continue
         rows.append(ParamRow(
+            row_number=int(row_number),
             scope=(scope or "").strip(),
             category=(category or "").strip(),
             subcategory=(subcategory or "").strip(),

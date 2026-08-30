@@ -55,7 +55,7 @@ def test_multi_number_fields_expand_to_multiple_columns():
     # dictionary.parsing._derive_multi_labels) rather than falling back to
     # the generic "Value 1", "Value 2", ... convention.
     registry = json.loads((GENERATED_DIR / "field_registry.json").read_text(encoding="utf-8"))
-    entry = registry["completion_interval::Drilling::Drilling Details::Mud PSD D10/D25/D40/D50/D75/D90"]
+    entry = registry["completion_interval::Completion::OH Drilling Details::Mud PSD D10/D25/D40/D50/D75/D90"]
     assert entry["db_columns"] == [
         "mud_psd_d10", "mud_psd_d25", "mud_psd_d40", "mud_psd_d50", "mud_psd_d75", "mud_psd_d90",
     ]

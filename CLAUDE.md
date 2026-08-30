@@ -56,7 +56,7 @@ Columns, in order:
 | `Affected Subcategory` | Conditional-visibility rule targeting a Subcategory (see below) |
 | `Affected Parameter` | Conditional-visibility rule targeting a single Parameter (see below) |
 | `Data Validation` | Constraint/options -- format depends on Input Type, see below |
-| `Tooltip` | Plain-language guidance shown as a "?" icon next to the field in the generated form. Populated on all 138 current rows. |
+| `Tooltip` | Plain-language guidance shown as a "?" icon next to the field in the generated form. Optional -- a row with a blank cell simply renders with no "?" icon. |
 | `User comment` | SME/reviewer feedback on the dictionary itself, collected during schema review. Not rendered into the form or stored anywhere -- purely a scratch column for iterating on the dictionary with subject matter experts. A per-field "comments" feature of the *form itself* may be built later; that would be a distinct, not-yet-built feature from this column. |
 
 ### Scope hierarchy

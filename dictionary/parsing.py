@@ -2,11 +2,16 @@
 
 Data Validation cells are close to JSON, modeled after Excel's own Data
 Validation dialog: a type name plus optional modifiers, e.g.
-`{"Decimal": {"min": 0}}`, `{"List": ["A", "B"]}`, `{"Whole number": {"min":
-1, "max": 10, "required": True}}`, or a bare `{"Decimal"}` / `{"Short
-Date"}` / `{"Any Value": {}}` when there's nothing to constrain. They're
-parsed with ast.literal_eval (tolerant of JSON's lowercase true/false/null
-too, since the cells aren't strictly JSON) rather than a strict JSON parser.
+`{"Decimal": {"min": 0}}`, `{"List": {"options": ["A", "B"], "required":
+True}}`, `{"Whole number": {"min": 1, "max": 10, "required": True}}`, or a
+bare `{"Decimal"}` / `{"Short Date"}` / `{"Any Value": {}}` when there's
+nothing to constrain. `List`/`Boolean` cells nest their option array under
+an `"options"` key alongside any other modifiers (`required`, etc.) rather
+than being the modifier dict directly; the older flat-list shape
+(`{"List": ["A", "B"]}`, no modifiers possible) still parses too, for any
+cell that hasn't been migrated. They're parsed with ast.literal_eval
+(tolerant of JSON's lowercase true/false/null too, since the cells aren't
+strictly JSON) rather than a strict JSON parser.
 
 Multi-number Text cells (sub-values packed into one cell, e.g. "Mud PSD")
 nest one such spec per sub-value inside a `{[...]}` wrapper. That wrapper
@@ -77,13 +82,24 @@ def _single_spec(parsed) -> dict | None:
         type_name, body = next(iter(parsed)), {}
     else:
         return None
-    spec = {"type": str(type_name), "options": None, "min": None, "max": None, "required": False}
+    spec = {
+        "type": str(type_name), "options": None, "min": None, "max": None, "required": False,
+        "pattern": None, "length": None,
+    }
     if isinstance(body, list):
+        # Legacy shape: {"List": ["A", "B"]} -- the body *is* the option list.
         spec["options"] = body
     elif isinstance(body, dict):
+        if "options" in body:
+            # Current shape: {"List": {"options": ["A", "B"], "required": True}}
+            # -- options live alongside other modifiers so a List/Boolean cell
+            # can carry "required" (or any future modifier) too.
+            spec["options"] = body.get("options")
         spec["min"] = body.get("min")
         spec["max"] = body.get("max")
         spec["required"] = bool(body.get("required"))
+        spec["pattern"] = body.get("pattern")
+        spec["length"] = body.get("length")
     return spec
 
 

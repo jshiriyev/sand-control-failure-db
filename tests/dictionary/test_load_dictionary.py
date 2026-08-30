@@ -34,10 +34,13 @@ def test_every_row_has_required_fields():
         assert row.input_type, f"blank Input Type on parameter {row.parameter!r}"
 
 
-def test_every_row_has_a_tooltip():
+def test_tooltip_is_optional_and_loads_as_blank_when_absent():
+    # A Tooltip is a nice-to-have, not a requirement -- a row without one
+    # loads with tooltip="" and the form simply omits its "?" icon
+    # (see form/generate_form.py:render_field_row's `if row.tooltip` check).
     rows = load_dictionary(MASTER_XLSX)
-    missing = [r.parameter for r in rows if not r.tooltip]
-    assert not missing, f"rows missing a Tooltip: {missing}"
+    for r in rows:
+        assert isinstance(r.tooltip, str)
 
 
 def test_no_duplicate_parameter_within_same_category_subcategory():

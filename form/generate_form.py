@@ -4,8 +4,8 @@
 Usage:
     python form/generate_form.py [input.xlsx] [output.html]
 
-Input is the "MasterView" sheet of MASTER.xlsx, 11 columns in this order:
-    Scope, Category, Subcategory, Parameter, Input Type, Unit,
+Input is the "MasterView" sheet of MASTER.xlsx, 12 columns in this order:
+    Row Number, Scope, Category, Subcategory, Parameter, Input Type, Unit,
     Affected Subcategory, Affected Parameter, Data Validation, Tooltip, User comment
 
 The dictionary-parsing layer (ParamRow, FieldSpec, load_dictionary,
@@ -14,6 +14,10 @@ package and is shared with `db/codegen.py`, so the form and the database
 schema are always derived from the exact same interpretation of MASTER.xlsx.
 See CLAUDE.md for the full data model. Key points this generator relies on:
 
+- `Row Number` is each row's 1-based position in MasterView. It is rendered
+  next to every field, zero-padded to 3 digits (e.g. "001", "025", "114"),
+  so a submitted/rendered field can be cross-referenced back to its exact
+  spreadsheet row.
 - `Scope` is one of "Well", "Completion Interval {id}", "Sand Body {id}" --
   a well has one or more Completion Intervals, each of which has one or more
   Sand Bodies. The form renders two independently repeatable, nested block
@@ -21,13 +25,14 @@ See CLAUDE.md for the full data model. Key points this generator relies on:
 - `Data Validation`, `Affected Subcategory` and `Affected Parameter` cells are
   written as Python-literal-safe text (parsed with ast.literal_eval, tolerant
   of JSON's lowercase true/false/null). Data Validation cells are a type name
-  plus optional modifiers, e.g. `{"Decimal": {"min": 0}}`, `{"List": ["A",
-  "B"]}`, or a bare `{"Short Date"}` when there's nothing to constrain. In the
-  Affected columns, a target listed as a plain set member means "start
-  hidden, SHOW when this trigger value is selected" (the original
-  convention); a target mapped to `False` means "start visible, HIDE when
-  this trigger value is selected" (the newer exclude convention). Both can
-  apply to the same target.
+  plus optional modifiers, e.g. `{"Decimal": {"min": 0}}`, `{"List":
+  {"options": ["A", "B"], "required": True}}`, `{"Text Length": {"min": 7,
+  "pattern": "alphanumeric"}}`, or a bare `{"Short Date"}` when there's
+  nothing to constrain. In the Affected columns, a target listed as a plain
+  set member means "start hidden, SHOW when this trigger value is selected"
+  (the original convention); a target mapped to `False` means "start
+  visible, HIDE when this trigger value is selected" (the newer exclude
+  convention). Both can apply to the same target.
 
 Requires: openpyxl (pip install openpyxl)
 """
@@ -166,6 +171,16 @@ def render_control(row: ParamRow, spec: FieldSpec) -> str:
             items.append(f'<span class="mn-item"><span class="mn-label">{esc(lbl)}</span>'
                          f'<input type="number" step="any"{item_attrs} class="mn-input"></span>')
         return f'<div class="multi-number" data-param="{dp}" data-kind="multi_number">{"".join(items)}</div>'
+    if spec.kind == "text" and (spec.min_length is not None or spec.max_length is not None or spec.pattern):
+        attrs = ""
+        if spec.min_length is not None:
+            attrs += f' minlength="{spec.min_length}"'
+        if spec.max_length is not None:
+            attrs += f' maxlength="{spec.max_length}"'
+        if spec.pattern:
+            attrs += f' pattern="{esc(spec.pattern)}"'
+        return (f'<input type="text"{attrs}{req_attr} data-param="{dp}" '
+                f'data-kind="text" placeholder="Enter text">')
     return f'<textarea rows="2"{req_attr} data-param="{dp}" data-kind="text" placeholder="Enter text"></textarea>'
 
 
@@ -181,8 +196,9 @@ def render_field_row(row: ParamRow, param_show: dict, param_hide: dict) -> str:
     action_html = (f'<span class="field-action"><button type="button" class="apply-count-btn" '
                     f'data-role="{role}">Apply</button></span>' if role else '<span class="field-action"></span>')
     comment_html = f'<input type="text" class="field-comment" data-comment-for="{esc(row.parameter)}" placeholder="Comment">'
+    rownum_html = f'<span class="field-rownum">{row.row_number:03d}</span>'
     return (f'<label class="field-row"{attrs}>'
-            f'<span class="field-name">{esc(row.parameter)}{req_mark}{tip_html}</span>'
+            f'<span class="field-name">{rownum_html}{esc(row.parameter)}{req_mark}{tip_html}</span>'
             f'{control}{unit_html}{action_html}{comment_html}</label>')
 
 
@@ -300,6 +316,7 @@ main { max-width: 1280px; margin: 1.5rem auto; padding: 0 1rem; }
 .zone-general .field-row { background: var(--general-row); }
 .zone-well .field-row { background: var(--well-row); }
 .field-name { font-size: .88rem; display: flex; align-items: center; gap: .3rem; }
+.field-rownum { font-family: "Consolas", monospace; font-size: .72rem; color: #888; flex: 0 0 auto; }
 .field-unit { font-size: .8rem; color: #555; }
 .field-action { display: flex; }
 .apply-count-btn { background: var(--header-bg); color: #fff; border: none; border-radius: 4px; padding: .3rem .6rem; cursor: pointer; font-size: .78rem; }
@@ -352,6 +369,7 @@ JS = """
   const MAX_COMPLETION = __MAX_COMPLETION__;
   const MAX_SAND_BODY = __MAX_SAND_BODY__;
   const wellSection = document.getElementById('well-section');
+  const sandForm = document.getElementById('sand-form');
 
   function findParamField(root, paramName) {
     return root.querySelector(`[data-param="${CSS.escape(paramName)}"]`);
@@ -368,6 +386,20 @@ JS = """
       return trigger && getControlValue(trigger) === value;
     });
   }
+  function clearControl(control) {
+    if (control.dataset.kind === 'multi_number') {
+      control.querySelectorAll('input').forEach((i) => { i.value = ''; });
+      return;
+    }
+    control.value = '';
+  }
+  // A hidden field/subcategory must not leave a stale value behind -- otherwise
+  // a trigger no longer shown (e.g. the "OH ..." selector after switching
+  // Completion Type to Cased Hole) keeps counting toward some other field's
+  // show/hide decision even though the user can no longer see or change it.
+  function resetHiddenControls(el) {
+    el.querySelectorAll('[data-param]').forEach(clearControl);
+  }
   function evaluateVisibility(root) {
     root.querySelectorAll('[data-show-if], [data-hide-if]').forEach((el) => {
       let visible = true;
@@ -376,6 +408,7 @@ JS = """
       const hideExpr = el.getAttribute('data-hide-if');
       if (visible && hideExpr && exprMatches(root, hideExpr)) visible = false;
       el.style.display = visible ? '' : 'none';
+      if (!visible) resetHiddenControls(el);
     });
   }
 
@@ -418,19 +451,29 @@ JS = """
       return section;
     }
 
+    function removeLast() {
+      if (count <= 1) return;
+      const last = container.lastElementChild;
+      if (!last) return;
+      last.remove();
+      renumber();
+    }
+
     addBtn.addEventListener('click', add);
     renumber();
-    return { add, get count() { return count; } };
+    return { add, removeLast, get count() { return count; } };
   }
 
-  function wireApplyButton(root, ensureCount) {
+  function wireApplyButton(root, repeater, maxCount) {
     const btn = root.querySelector('.apply-count-btn');
     if (!btn) return;
     btn.addEventListener('click', () => {
       const input = btn.closest('.field-row').querySelector('[data-kind="number"]');
       const n = input ? parseInt(input.value, 10) : NaN;
       if (!Number.isFinite(n) || n < 1) return;
-      ensureCount(n);
+      const target = Math.min(n, maxCount);
+      while (repeater.count < target) repeater.add();
+      while (repeater.count > target && repeater.count > 1) repeater.removeLast();
     });
   }
 
@@ -443,10 +486,7 @@ JS = """
       labelSingular: 'Sand Body',
     });
     repeater.add();
-    wireApplyButton(completionSection.querySelector('.own-fields'), (n) => {
-      const target = Math.min(n, MAX_SAND_BODY);
-      while (repeater.count < target) repeater.add();
-    });
+    wireApplyButton(completionSection.querySelector('.own-fields'), repeater, MAX_SAND_BODY);
   }
 
   const completionRepeater = setupRepeater({
@@ -461,10 +501,7 @@ JS = """
   wellSection.addEventListener('change', () => evaluateVisibility(wellSection));
   evaluateVisibility(wellSection);
   completionRepeater.add();
-  wireApplyButton(wellSection, (n) => {
-    const target = Math.min(n, MAX_COMPLETION);
-    while (completionRepeater.count < target) completionRepeater.add();
-  });
+  wireApplyButton(wellSection, completionRepeater, MAX_COMPLETION);
 
   // ---- export ----
   function readFieldValue(fieldRow) {
@@ -566,9 +603,17 @@ JS = """
   }
 
   document.getElementById('export-json-btn').addEventListener('click', () => {
+    // reportValidity() checks every visible field's required/min/max/minlength/
+    // pattern constraints (a field hidden by evaluateVisibility is automatically
+    // excluded per the HTML spec) and shows the browser's native tooltip on the
+    // first invalid one -- since the buttons are type="button" and the form
+    // itself has onsubmit="return false;" (there's no real submit to trigger
+    // this check for us), export is the only point that can trigger it.
+    if (!sandForm.reportValidity()) return;
     download('sand_control_record.json', JSON.stringify(collectData(), null, 2), 'application/json');
   });
   document.getElementById('export-csv-btn').addEventListener('click', () => {
+    if (!sandForm.reportValidity()) return;
     download('sand_control_record.csv', toCsv(collectCsvRows()), 'text/csv');
   });
 })();

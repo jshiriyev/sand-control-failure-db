@@ -89,6 +89,9 @@ def generate() -> dict[str, list[tuple[str, str, str]]]:
                 "max_value": spec.max_value,
                 "step": spec.step,
                 "required": spec.required,
+                "min_length": spec.min_length,
+                "max_length": spec.max_length,
+                "pattern": spec.pattern,
                 "unit": row.unit,
             }
 
