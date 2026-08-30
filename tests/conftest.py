@@ -88,6 +88,50 @@ def client(db_session):
 
 
 @pytest.fixture()
+def make_payload():
+    """Factory for a minimal ``POST /records`` payload that satisfies every
+    currently-required field, built from ``db/generated/field_registry.json``
+    so it stays correct as the dictionary's required set changes (only the
+    ``well`` scope has required fields today; the loop covers the others for
+    free if that changes). Tests mutate the returned dict to exercise a
+    specific validation path.
+    """
+    from db.mapping import _REGISTRY
+
+    def _sample(entry: dict):
+        kind = entry["kind"]
+        if kind == "select":
+            return entry["options"][0]
+        if kind == "date":
+            return "2020-01-01"
+        if kind == "number":
+            return entry["min_value"] if entry["min_value"] is not None else 1
+        if kind == "multi_number":
+            return [1] * len(entry["db_columns"])
+        if kind == "text" and entry["pattern"]:
+            return "A" * max(entry["min_length"] or 1, 8)
+        return "sample text"
+
+    def _factory() -> dict:
+        buckets: dict[str, dict] = {}
+        for entry in _REGISTRY.values():
+            if not entry.get("required"):
+                continue
+            bucket = buckets.setdefault(entry["scope"], {})
+            (bucket.setdefault(entry["category"], {})
+                   .setdefault(entry["subcategory"], {})[entry["parameter"]]) = _sample(entry)
+        return {
+            "well": buckets.get("well", {}),
+            "completion_intervals": [
+                {"fields": buckets.get("completion_interval", {}),
+                 "sand_bodies": [buckets.get("sand_body", {})]},
+            ],
+        }
+
+    return _factory
+
+
+@pytest.fixture()
 def seeded_org(db_session):
     from backend.app.deps.auth import hash_token
     from db.models import Organization
