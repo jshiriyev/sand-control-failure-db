@@ -355,7 +355,7 @@
       "Brine",
       "Xanthan",
       "VES",
-      "HES",
+      "HEC",
       "Oil Based"
     ],
     "parameter": "Carrier Fluid Type - OHGP",
@@ -1034,10 +1034,10 @@
     "table": "completion_interval",
     "unit": ""
   },
-  "completion_interval::Completion::OH Drilling Details::PSD Test Volume": {
+  "completion_interval::Completion::OH Drilling Details::PST Test Volume": {
     "category": "Completion",
     "db_columns": [
-      "psd_test_volume"
+      "pst_test_volume"
     ],
     "db_type": "Numeric",
     "kind": "number",
@@ -1046,7 +1046,7 @@
     "min_length": null,
     "min_value": 0,
     "options": [],
-    "parameter": "PSD Test Volume",
+    "parameter": "PST Test Volume",
     "pattern": null,
     "required": false,
     "scope": "completion_interval",
@@ -2330,11 +2330,20 @@
     "min_length": null,
     "min_value": null,
     "options": [
-      "Aggressive drawdown",
-      "Screen plugging",
-      "Water breakthrough",
-      "Water hammer",
-      "Hard shutdown",
+      "Aggressive Drawdown",
+      "Screen Plugging",
+      "Water Breakthrough",
+      "Hard Shutdown",
+      "Flux",
+      "Incomplete Gravel Pack",
+      "Compaction",
+      "Excessive Drawdown",
+      "Rapid Beanup",
+      "Hard Shut-in",
+      "Well Slugging",
+      "Intervention Induced Damage",
+      "Wrongly Sized Sand Control",
+      "No Sand Control Installed",
       "Other",
       "Unknown"
     ],

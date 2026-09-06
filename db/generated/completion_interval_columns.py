@@ -23,7 +23,7 @@ COMPLETION_INTERVAL_COLUMNS = [
     Column("mud_psd_d50", Numeric, nullable=True, comment="Mud PSD D10/D25/D40/D50/D75/D90"),
     Column("mud_psd_d75", Numeric, nullable=True, comment="Mud PSD D10/D25/D40/D50/D75/D90"),
     Column("mud_psd_d90", Numeric, nullable=True, comment="Mud PSD D10/D25/D40/D50/D75/D90"),
-    Column("psd_test_volume", Numeric, nullable=True, comment="PSD Test Volume"),
+    Column("pst_test_volume", Numeric, nullable=True, comment="PST Test Volume"),
     Column("casing_size", Numeric, nullable=True, comment="Casing Size"),
     Column("gross_perf_length", Numeric, nullable=True, comment="Gross Perf Length"),
     Column("net_perf_length", Numeric, nullable=True, comment="Net Perf Length"),
