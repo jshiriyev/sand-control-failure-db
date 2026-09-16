@@ -92,6 +92,14 @@ the committed output doesn't match (the "codegen drift check") -- so a
 dictionary edit that wasn't followed by regenerating fails in CI even if
 it's forgotten locally.
 
+The generated form self-locks after a baked-in expiration date (client-side
+check, since the form has no backend to call) -- currently `2026-11-01`
+(`DEFAULT_EXPIRES_ON` in `form/generate_form.py`). To reissue the form with a
+later cutoff, regenerate with `--expires-on YYYY-MM-DD` (or update the
+`DEFAULT_EXPIRES_ON` constant and commit the regenerated
+`sand_control_form.html`); pass `--expires-on ""` for a build with no
+expiration.
+
 Note: Alembic's `--autogenerate` cannot detect a column *rename* -- it will
 show it as a drop + an add. If a dictionary edit is truly a rename, hand-edit
 the generated migration to use `op.alter_column(...)` instead, or it will

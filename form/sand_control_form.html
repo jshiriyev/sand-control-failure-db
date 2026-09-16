@@ -21,6 +21,8 @@ body { font-family: Arial, Helvetica, sans-serif; margin: 0; padding: 0 0 4rem; 
 header.page-header { background: var(--header-bg); color: var(--header-text); padding: 1.25rem 1.5rem; }
 header.page-header h1 { margin: 0 0 .25rem; font-size: 1.4rem; }
 header.page-header p { margin: 0; opacity: .85; font-size: .9rem; }
+header.page-header .validity-notice { margin-top: .4rem; font-weight: 600; }
+header.page-header .expired-banner { margin-top: .6rem; background: #b00020; color: #fff; padding: .6rem .9rem; border-radius: 4px; font-weight: 600; opacity: 1; }
 main { max-width: 1280px; margin: 1.5rem auto; padding: 0 1rem; }
 .zone { margin-bottom: 1.25rem; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; background: #fff; }
 .zone-title { margin: 0; padding: .6rem 1rem; font-size: 1.05rem; font-weight: bold; color: var(--banner-text); }
@@ -104,6 +106,11 @@ input.mn-input { padding: .35rem .25rem; text-align: center; }
 <header class="page-header">
   <h1>Sand Control Failure Record Form &mdash; Producer Wells</h1>
   <p>Fill in the fields below, then use Export JSON / Export CSV to save your record. Hover the <strong>?</strong> icon next to a field for guidance.</p>
+  <p class="validity-notice">This form accepts submissions through November 1, 2026.</p>
+  <p id="expired-banner" class="expired-banner" style="display:none;">
+    This form has expired and is no longer accepting submissions. Please contact your Sand Control Failure DB
+    program contact for a current version of the form.
+  </p>
 </header>
 <main>
   <form id="sand-form" onsubmit="return false;">
@@ -124,8 +131,20 @@ input.mn-input { padding: .35rem .25rem; text-align: center; }
 (function () {
   const MAX_COMPLETION = 10;
   const MAX_SAND_BODY = 10;
+  const EXPIRES_ON = "2026-11-01";
   const wellSection = document.getElementById('well-section');
   const sandForm = document.getElementById('sand-form');
+
+  // Cutoff is inclusive of the whole EXPIRES_ON day in the viewer's local time --
+  // the form stays usable through that date and locks starting the next day.
+  if (EXPIRES_ON && new Date() > new Date(EXPIRES_ON + 'T23:59:59')) {
+    document.getElementById('expired-banner').style.display = '';
+    document.querySelectorAll('#sand-form input, #sand-form select, #sand-form textarea, #sand-form button')
+      .forEach((el) => { el.disabled = true; });
+    document.getElementById('export-json-btn').disabled = true;
+    document.getElementById('export-csv-btn').disabled = true;
+    return;
+  }
 
   function findParamField(root, paramName) {
     return root.querySelector(`[data-param="${CSS.escape(paramName)}"]`);

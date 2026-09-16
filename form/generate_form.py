@@ -40,8 +40,10 @@ from __future__ import annotations
 
 import argparse
 import html
+import json
 import sys
 from collections import defaultdict
+from datetime import date
 from pathlib import Path
 
 # Allow `python form/generate_form.py` to find the top-level `dictionary`
@@ -66,6 +68,12 @@ DEFAULT_INPUT = REPO_ROOT / "MASTER.xlsx"
 DEFAULT_OUTPUT = Path(__file__).resolve().parent / "sand_control_form.html"
 DEFAULT_MAX_COMPLETION = 10
 DEFAULT_MAX_SAND_BODY = 10
+# Form is emailed out as a standalone file with no backend to check against, so
+# expiration is enforced client-side: baked in at generation time and re-checked
+# by the browser on every load. Not tamper-proof, but sufficient for the actual
+# threat model (a partner company holding onto an old file), and needs no new
+# infrastructure. Bump this (or pass --expires-on) each time the form is reissued.
+DEFAULT_EXPIRES_ON = "2026-11-01"
 
 WELL_ZONE_CLASS = {
     "General Information": "zone-general",
@@ -285,6 +293,8 @@ body { font-family: Arial, Helvetica, sans-serif; margin: 0; padding: 0 0 4rem; 
 header.page-header { background: var(--header-bg); color: var(--header-text); padding: 1.25rem 1.5rem; }
 header.page-header h1 { margin: 0 0 .25rem; font-size: 1.4rem; }
 header.page-header p { margin: 0; opacity: .85; font-size: .9rem; }
+header.page-header .validity-notice { margin-top: .4rem; font-weight: 600; }
+header.page-header .expired-banner { margin-top: .6rem; background: #b00020; color: #fff; padding: .6rem .9rem; border-radius: 4px; font-weight: 600; opacity: 1; }
 main { max-width: 1280px; margin: 1.5rem auto; padding: 0 1rem; }
 .zone { margin-bottom: 1.25rem; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; background: #fff; }
 .zone-title { margin: 0; padding: .6rem 1rem; font-size: 1.05rem; font-weight: bold; color: var(--banner-text); }
@@ -368,8 +378,20 @@ JS = """
 (function () {
   const MAX_COMPLETION = __MAX_COMPLETION__;
   const MAX_SAND_BODY = __MAX_SAND_BODY__;
+  const EXPIRES_ON = __EXPIRES_ON__;
   const wellSection = document.getElementById('well-section');
   const sandForm = document.getElementById('sand-form');
+
+  // Cutoff is inclusive of the whole EXPIRES_ON day in the viewer's local time --
+  // the form stays usable through that date and locks starting the next day.
+  if (EXPIRES_ON && new Date() > new Date(EXPIRES_ON + 'T23:59:59')) {
+    document.getElementById('expired-banner').style.display = '';
+    document.querySelectorAll('#sand-form input, #sand-form select, #sand-form textarea, #sand-form button')
+      .forEach((el) => { el.disabled = true; });
+    document.getElementById('export-json-btn').disabled = true;
+    document.getElementById('export-csv-btn').disabled = true;
+    return;
+  }
 
   function findParamField(root, paramName) {
     return root.querySelector(`[data-param="${CSS.escape(paramName)}"]`);
@@ -621,10 +643,20 @@ JS = """
 
 
 def render_html(model: dict, max_completion: int = DEFAULT_MAX_COMPLETION,
-                 max_sand_bodies: int = DEFAULT_MAX_SAND_BODY) -> str:
+                 max_sand_bodies: int = DEFAULT_MAX_SAND_BODY,
+                 expires_on: str = DEFAULT_EXPIRES_ON) -> str:
     well_html = render_well_section(model)
     completion_template_html = render_completion_template(model)
-    js = JS.replace("__MAX_COMPLETION__", str(max_completion)).replace("__MAX_SAND_BODY__", str(max_sand_bodies))
+    js = (JS.replace("__MAX_COMPLETION__", str(max_completion))
+            .replace("__MAX_SAND_BODY__", str(max_sand_bodies))
+            .replace("__EXPIRES_ON__", json.dumps(expires_on) if expires_on else "null"))
+
+    if expires_on:
+        cutoff = date.fromisoformat(expires_on)
+        display_date = f"{cutoff:%B} {cutoff.day}, {cutoff.year}"
+        validity_notice = f"<p class=\"validity-notice\">This form accepts submissions through {display_date}.</p>"
+    else:
+        validity_notice = ""
 
     return f"""<!doctype html>
 <html lang="en">
@@ -638,6 +670,11 @@ def render_html(model: dict, max_completion: int = DEFAULT_MAX_COMPLETION,
 <header class="page-header">
   <h1>Sand Control Failure Record Form &mdash; Producer Wells</h1>
   <p>Fill in the fields below, then use Export JSON / Export CSV to save your record. Hover the <strong>?</strong> icon next to a field for guidance.</p>
+  {validity_notice}
+  <p id="expired-banner" class="expired-banner" style="display:none;">
+    This form has expired and is no longer accepting submissions. Please contact your Sand Control Failure DB
+    program contact for a current version of the form.
+  </p>
 </header>
 <main>
   <form id="sand-form" onsubmit="return false;">
@@ -668,7 +705,13 @@ def main() -> None:
                          help="Maximum number of Completion Interval blocks a user can add")
     parser.add_argument("--max-sand-bodies", type=int, default=DEFAULT_MAX_SAND_BODY,
                          help="Maximum number of Sand Body blocks per Completion Interval")
+    parser.add_argument("--expires-on", default=DEFAULT_EXPIRES_ON,
+                         help="ISO date (YYYY-MM-DD) after which the generated form locks itself "
+                              "(client-side check baked in at generation time). Pass \"\" for no expiration.")
     args = parser.parse_args()
+
+    if args.expires_on:
+        date.fromisoformat(args.expires_on)  # fail fast on a malformed --expires-on value
 
     input_path = Path(args.input)
     if not input_path.exists():
@@ -679,7 +722,7 @@ def main() -> None:
         raise SystemExit("No rows found in the dictionary sheet.")
     model = build_model(rows)
     html_out = render_html(model, max_completion=args.max_completion_intervals,
-                            max_sand_bodies=args.max_sand_bodies)
+                            max_sand_bodies=args.max_sand_bodies, expires_on=args.expires_on)
 
     output_path = Path(args.output)
     output_path.write_text(html_out, encoding="utf-8")
