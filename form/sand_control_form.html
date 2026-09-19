@@ -175,6 +175,34 @@ input.mn-input { padding: .35rem .25rem; text-align: center; }
   function resetHiddenControls(el) {
     el.querySelectorAll('[data-param]').forEach(clearControl);
   }
+  // Hiding a control with CSS does NOT exempt it from constraint validation --
+  // only `disabled` does. Without this, a required field the user can't even see
+  // (row 017/018 "Severity of sand production - Oil/Gas Well" are mutually
+  // exclusive, so one of the two is always hidden) keeps failing
+  // reportValidity() forever, and because the browser can't focus an unrendered
+  // control to show its message, both exports just die silently. So the same
+  // pass that hides a field also disables its controls, and re-enables them
+  // when the field comes back.
+  //
+  // Hidden-ness must be read from the whole ancestor chain rather than the
+  // element's own style: a field row can have its own satisfied show-if rule
+  // (017 is shown by "Well type=Oil Producer") while the subcategory around it
+  // is hidden by an unrelated one ("Sand failure=Yes"), which leaves the row
+  // display:'' yet still unreachable.
+  function isRuleHidden(el) {
+    for (let node = el; node; node = node.parentElement) {
+      if (node.style && node.style.display === 'none') return true;
+    }
+    return false;
+  }
+  // Buttons are deliberately excluded: they're barred from constraint
+  // validation anyway, and the repeaters own their disabled state (an
+  // "+ Add ..." button disabled at max count must stay disabled).
+  function syncValidationExemptions(root) {
+    root.querySelectorAll('input, select, textarea').forEach((control) => {
+      control.disabled = isRuleHidden(control);
+    });
+  }
   function evaluateVisibility(root) {
     root.querySelectorAll('[data-show-if], [data-hide-if]').forEach((el) => {
       let visible = true;
@@ -185,6 +213,9 @@ input.mn-input { padding: .35rem .25rem; text-align: center; }
       el.style.display = visible ? '' : 'none';
       if (!visible) resetHiddenControls(el);
     });
+    // Only correct once every display above has settled, since an exemption
+    // depends on the element's ancestors, not just on the element itself.
+    syncValidationExemptions(root);
   }
 
   function setupRepeater({ container, template, addBtn, maxCount, labelSingular, onAdd }) {
@@ -378,12 +409,13 @@ input.mn-input { padding: .35rem .25rem; text-align: center; }
   }
 
   document.getElementById('export-json-btn').addEventListener('click', () => {
-    // reportValidity() checks every visible field's required/min/max/minlength/
-    // pattern constraints (a field hidden by evaluateVisibility is automatically
-    // excluded per the HTML spec) and shows the browser's native tooltip on the
-    // first invalid one -- since the buttons are type="button" and the form
-    // itself has onsubmit="return false;" (there's no real submit to trigger
-    // this check for us), export is the only point that can trigger it.
+    // reportValidity() checks the required/min/max/minlength/pattern constraints
+    // of every enabled field and shows the browser's native tooltip on the first
+    // invalid one -- since the buttons are type="button" and the form itself has
+    // onsubmit="return false;" (there's no real submit to trigger this check for
+    // us), export is the only point that can trigger it. Fields hidden by a
+    // conditional rule are skipped only because evaluateVisibility disables
+    // them; being hidden is not by itself an exemption (see isRuleHidden).
     if (!sandForm.reportValidity()) return;
     download('sand_control_record.json', JSON.stringify(collectData(), null, 2), 'application/json');
   });
