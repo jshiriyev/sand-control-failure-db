@@ -89,6 +89,20 @@ COUNTER_ROLES = {
     "Number of sand bodies": "apply-sand-body",
 }
 
+# The Well-scope Parameters whose values, joined in this order, name the
+# exported files, so a reviewer can tell one record from another without
+# opening it. The identification number is carried alongside the name because
+# it is the constrained one (7+ alphanumeric), which keeps the filename
+# distinct even when two submissions choose the same free-text label.
+#
+# Matched by exact Parameter name, same convention as COUNTER_ROLES: if the
+# dictionary renames one, that lookup simply misses and its part drops out of
+# the filename; if every lookup misses, exports fall back to a generic name.
+EXPORT_NAME_PARAMS = (
+    "Well name (anonymized)",
+    "Well identification number (anonymized)",
+)
+
 
 # --------------------------------------------------------------------------
 # Conditional-visibility model (rendering-only concern -- the DB layer stores
@@ -152,7 +166,20 @@ def render_control(row: ParamRow, spec: FieldSpec) -> str:
     dp = esc(row.parameter)
     req_attr = " required" if spec.required else ""
     if spec.kind == "select":
-        options = ['<option value="" selected disabled>Select...</option>']
+        # The placeholder is deliberately NOT `disabled`. A disabled option can be
+        # the initial selection but can never be chosen again, so a user who picks
+        # a value by mistake has no way back to "no answer" -- and that also strands
+        # the optional selects that drive show/hide rules (Completion Type, the two
+        # Sand Control Selected Method fields, Placement Method, Pack Efficiency
+        # Source) in whichever branch was chosen first, with no neutral state to
+        # return to. `required` is what enforces required-ness, so a blanked
+        # required select is still invalid and still blocks export; making the
+        # placeholder reachable weakens nothing.
+        #
+        # Optional fields label it "(Blank)" rather than "Select...", so the
+        # placeholder also says that leaving the field blank is a real answer here.
+        blank_label = "Select..." if spec.required else "(Blank)"
+        options = [f'<option value="" selected>{blank_label}</option>']
         options += [f'<option value="{esc(o)}">{esc(o)}</option>' for o in spec.options]
         return f'<select data-param="{dp}" data-kind="select"{req_attr}>{"".join(options)}</select>'
     if spec.kind == "number":
@@ -379,6 +406,7 @@ JS = """
   const MAX_COMPLETION = __MAX_COMPLETION__;
   const MAX_SAND_BODY = __MAX_SAND_BODY__;
   const EXPIRES_ON = __EXPIRES_ON__;
+  const EXPORT_NAME_PARAMS = __EXPORT_NAME_PARAMS__;
   const wellSection = document.getElementById('well-section');
   const sandForm = document.getElementById('sand-form');
 
@@ -646,6 +674,50 @@ JS = """
     return [header, ...rows].map((r) => r.map(escCell).join(',')).join('\\r\\n');
   }
 
+  // Exports are named from the well's anonymized label and identification
+  // number, so a reviewer collecting submissions can tell records apart in a
+  // download folder without opening them.
+  //
+  // Repeat exports are deliberately NOT numbered here. A page cannot see the
+  // download folder, so an in-page counter would count exports in this session
+  // rather than actual filename collisions -- it would stamp "(2)" on the first
+  // export after a reload, and miss a real clash with a file saved yesterday.
+  // Browsers already uniquify a colliding download themselves, which is both
+  // correct and what users expect from every other download they make.
+  const ILLEGAL_FILENAME_CHARS = /[<>:"/\\\\|?*\\u0000-\\u001f]/g;
+  // Windows rejects these as a base name whatever extension follows them.
+  const RESERVED_FILENAMES = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i;
+
+  // Each part is capped well short of the whole, so one long free-text label
+  // can never crowd the identification number out of the joined filename.
+  function safeFilenamePart(value) {
+    return (value || '')
+      .trim()
+      .replace(ILLEGAL_FILENAME_CHARS, '_')
+      .replace(/\\s+/g, '_')
+      .replace(/_{2,}/g, '_')
+      .slice(0, 50)
+      .replace(/^[._]+/, '')    // a leading dot hides the file on macOS/Linux
+      .replace(/[._]+$/, '');   // Windows silently strips trailing dots
+  }
+
+  function exportBaseName() {
+    const parts = EXPORT_NAME_PARAMS
+      .map((param) => {
+        const field = findParamField(wellSection, param);
+        return safeFilenamePart(field ? field.value : '');
+      })
+      .filter((part) => part !== '');
+    // Both source fields are required, so by the time an export can run these
+    // normally hold real values. Dropping empty parts rather than joining them
+    // blindly keeps the filename clean when one is missing -- which happens if
+    // the dictionary renames a Parameter (that lookup misses) or if a value is
+    // made entirely of characters a filename cannot carry.
+    const base = parts.join('_');
+    if (!base) return 'sand_control_record';
+    return RESERVED_FILENAMES.test(base) ? `well_${base}` : base;
+  }
+
   function download(filename, content, mime) {
     const blob = new Blob([content], { type: mime });
     const url = URL.createObjectURL(blob);
@@ -664,11 +736,11 @@ JS = """
     // conditional rule are skipped only because evaluateVisibility disables
     // them; being hidden is not by itself an exemption (see isRuleHidden).
     if (!sandForm.reportValidity()) return;
-    download('sand_control_record.json', JSON.stringify(collectData(), null, 2), 'application/json');
+    download(exportBaseName() + '.json', JSON.stringify(collectData(), null, 2), 'application/json');
   });
   document.getElementById('export-csv-btn').addEventListener('click', () => {
     if (!sandForm.reportValidity()) return;
-    download('sand_control_record.csv', toCsv(collectCsvRows()), 'text/csv');
+    download(exportBaseName() + '.csv', toCsv(collectCsvRows()), 'text/csv');
   });
 })();
 """
@@ -681,7 +753,8 @@ def render_html(model: dict, max_completion: int = DEFAULT_MAX_COMPLETION,
     completion_template_html = render_completion_template(model)
     js = (JS.replace("__MAX_COMPLETION__", str(max_completion))
             .replace("__MAX_SAND_BODY__", str(max_sand_bodies))
-            .replace("__EXPIRES_ON__", json.dumps(expires_on) if expires_on else "null"))
+            .replace("__EXPIRES_ON__", json.dumps(expires_on) if expires_on else "null")
+            .replace("__EXPORT_NAME_PARAMS__", json.dumps(list(EXPORT_NAME_PARAMS))))
 
     if expires_on:
         cutoff = date.fromisoformat(expires_on)
