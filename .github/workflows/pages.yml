@@ -1,0 +1,80 @@
+# Publishes the intake form to GitHub Pages at
+# https://jshiriyev.github.io/sand-control-failure-db/
+#
+# The form is regenerated from MASTER.xlsx on every deploy rather than served
+# from the committed form/sand_control_form.html, so the hosted page can never
+# drift from the dictionary -- same guarantee the CI codegen drift check gives
+# the committed copy. Nothing built here is committed back to the repo.
+#
+# Enabling this needs a one-time UI step that a workflow can't do for itself:
+# Settings -> Pages -> Build and deployment -> Source: "GitHub Actions".
+name: Deploy form to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - MASTER.xlsx
+      - form/generate_form.py
+      - dictionary/**
+      - .github/workflows/pages.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never let two deploys race; a superseded build is not worth finishing.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # openpyxl is the generator's only third-party dependency (form/
+      # generate_form.py -> dictionary/), so skip the full `pip install -e
+      # ".[dev]"` that CI needs -- no psycopg/FastAPI toolchain on this path.
+      - name: Install the generator's dependency
+        run: pip install openpyxl
+
+      # --expires-on "" disables the client-side expiration baked into the
+      # emailed-file build. That lock exists for a standalone file a partner
+      # company might hold onto after it goes stale; a hosted page is already
+      # under our control, so the only thing an expiry date would do here is
+      # silently kill the live link on a date nobody is watching. To reinstate
+      # it for a campaign deadline, replace "" with an ISO date (YYYY-MM-DD).
+      - name: Generate the form as the site index
+        run: |
+          mkdir -p _site
+          python form/generate_form.py MASTER.xlsx _site/index.html --expires-on ""
+
+      # Keeps the form out of search results. This is obscurity, not access
+      # control -- a Pages site on a public repo is readable by anyone with the
+      # link, by design. Drop these two lines if you want it indexed.
+      - name: Ask search engines not to index the form
+        run: |
+          echo "User-agent: *" > _site/robots.txt
+          echo "Disallow: /" >> _site/robots.txt
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
