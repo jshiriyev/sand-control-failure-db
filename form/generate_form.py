@@ -270,7 +270,8 @@ def render_sand_body_template(model: dict) -> str:
         '<template class="sand-body-template">'
         '<section class="interval-instance sand-body-instance">'
         '<div class="interval-banner">'
-        '<h3 class="zone-title">SAND BODY <span class="interval-index"></span></h3>'
+        '<h3 class="zone-title">COMPLETION INTERVAL <span class="completion-index"></span>'
+        ' - SAND BODY <span class="interval-index"></span></h3>'
         '<button type="button" class="remove-interval-btn">Remove</button>'
         '</div>'
         f'{groups}'
@@ -396,7 +397,8 @@ input.mn-input { padding: .35rem .25rem; text-align: center; }
 .add-sand-body-btn { background: var(--header-bg); color: #fff; border: none; border-radius: 4px; padding: .4rem .8rem; cursor: pointer; font-size: .82rem; }
 .add-sand-body-btn:disabled { background: #9aa; cursor: not-allowed; }
 .sand-bodies-container { display: flex; flex-direction: column; gap: .75rem; }
-.export-bar { position: sticky; bottom: 0; background: #fff; border-top: 2px solid var(--header-bg); padding: .75rem 1rem; display: flex; gap: .75rem; justify-content: flex-end; max-width: 1280px; margin: 0 auto; }
+.export-bar { position: sticky; bottom: 0; background: #fff; border-top: 2px solid var(--header-bg); padding: .75rem 1rem; display: flex; flex-wrap: wrap; gap: .75rem; justify-content: flex-end; max-width: 1280px; margin: 0 auto; }
+#import-status { flex-basis: 100%; margin: 0; font-size: .85rem; text-align: right; }
 .export-bar button { background: var(--header-bg); color: #fff; border: none; border-radius: 4px; padding: .55rem 1.1rem; cursor: pointer; font-size: .9rem; }
 .export-bar button:hover { opacity: .9; }
 """
@@ -418,6 +420,9 @@ JS = """
       .forEach((el) => { el.disabled = true; });
     document.getElementById('export-json-btn').disabled = true;
     document.getElementById('export-csv-btn').disabled = true;
+    document.getElementById('draft-json-btn').disabled = true;
+    document.getElementById('draft-csv-btn').disabled = true;
+    document.getElementById('import-btn').disabled = true;
     return;
   }
 
@@ -505,6 +510,10 @@ JS = """
         const idxEl = section.querySelector(':scope > .interval-banner .interval-index');
         if (idxEl) idxEl.textContent = i;
         section.dataset.intervalIndex = i;
+        const completionIdxEl = section.querySelector(':scope > .interval-banner .completion-index');
+        if (completionIdxEl) completionIdxEl.textContent = section.closest('.completion-instance').dataset.intervalIndex;
+        section.querySelectorAll('.sand-body-instance > .interval-banner .completion-index')
+          .forEach((el) => { el.textContent = i; });
       });
       count = i;
       addBtn.disabled = count >= maxCount;
@@ -566,6 +575,7 @@ JS = """
       maxCount: MAX_SAND_BODY,
       labelSingular: 'Sand Body',
     });
+    completionSection.sandBodyRepeater = repeater;
     repeater.add();
     wireApplyButton(completionSection.querySelector('.own-fields'), repeater, MAX_SAND_BODY);
   }
@@ -584,12 +594,11 @@ JS = """
   completionRepeater.add();
   wireApplyButton(wellSection, completionRepeater, MAX_COMPLETION);
 
-  // ---- export ----
+  // ---- collect a shared record for both file formats ----
   function readFieldValue(fieldRow) {
     const control = fieldRow.querySelector('[data-kind]');
     if (!control) return null;
-    const kind = control.dataset.kind;
-    if (kind === 'multi_number') {
+    if (control.dataset.kind === 'multi_number') {
       const vals = Array.from(control.querySelectorAll('input')).map((i) => i.value);
       return vals.every((v) => v === '') ? null : vals;
     }
@@ -601,77 +610,328 @@ JS = """
     return control ? control.getAttribute('data-param') : '';
   }
 
-  function walkVisibleFields(root, cb) {
+  function walkFields(root, visibleOnly, cb) {
     if (!root) return;
     root.querySelectorAll('.subcategory').forEach((sub) => {
-      if (sub.style.display === 'none') return;
+      if (visibleOnly && sub.style.display === 'none') return;
       sub.querySelectorAll('.field-row').forEach((fr) => {
-        if (fr.style.display === 'none') return;
+        if (visibleOnly && fr.style.display === 'none') return;
         cb(sub, fr);
       });
     });
   }
 
+  function putBucketValue(bucket, category, subcategory, parameter, value) {
+    bucket[category] = bucket[category] || {};
+    bucket[category][subcategory] = bucket[category][subcategory] || {};
+    bucket[category][subcategory][parameter] = value;
+  }
+
+  function bucketValue(bucket, category, subcategory, parameter) {
+    return bucket?.[category]?.[subcategory]?.[parameter] ?? null;
+  }
+
   function collectBucket(root) {
     const bucket = {};
-    walkVisibleFields(root, (sub, fr) => {
-      const cat = sub.dataset.category, subc = sub.dataset.subcategory;
-      const param = fieldParam(fr);
-      const val = readFieldValue(fr);
-      if (val === null) return;
-      bucket[cat] = bucket[cat] || {};
-      bucket[cat][subc] = bucket[cat][subc] || {};
-      bucket[cat][subc][param] = val;
+    walkFields(root, true, (sub, fr) => {
+      const value = readFieldValue(fr);
+      if (value !== null) putBucketValue(bucket, sub.dataset.category, sub.dataset.subcategory, fieldParam(fr), value);
+    });
+    return bucket;
+  }
+
+  function collectComments(root) {
+    const bucket = {};
+    // A comment remains in the form if its conditional field is hidden, so
+    // save it even though hidden field values are cleared by visibility rules.
+    walkFields(root, false, (sub, fr) => {
+      const comment = fr.querySelector('.field-comment').value;
+      if (comment !== '') putBucketValue(bucket, sub.dataset.category, sub.dataset.subcategory, fieldParam(fr), comment);
     });
     return bucket;
   }
 
   function collectData() {
     const well = collectBucket(wellSection);
+    const comments = { well: collectComments(wellSection), completion_intervals: [] };
     const completion_intervals = [];
-    document.getElementById('completion-intervals-container').querySelectorAll(':scope > .completion-instance').forEach((compSection) => {
-      const fields = collectBucket(compSection.querySelector('.own-fields'));
-      const sand_bodies = [];
-      compSection.querySelectorAll(':scope > .sand-body-nest > .sand-bodies-container > .sand-body-instance').forEach((sbSection) => {
-        sand_bodies.push(collectBucket(sbSection));
+    document.querySelectorAll('#completion-intervals-container > .completion-instance').forEach((comp) => {
+      const fields = collectBucket(comp.querySelector('.own-fields'));
+      const fieldComments = collectComments(comp.querySelector('.own-fields'));
+      const sand_bodies = [], sandComments = [];
+      comp.querySelectorAll(':scope > .sand-body-nest > .sand-bodies-container > .sand-body-instance').forEach((sb) => {
+        sand_bodies.push(collectBucket(sb));
+        sandComments.push(collectComments(sb));
       });
       completion_intervals.push({ fields, sand_bodies });
+      comments.completion_intervals.push({ fields: fieldComments, sand_bodies: sandComments });
     });
-    return { generated_at: new Date().toISOString(), well, completion_intervals };
+    return { generated_at: new Date().toISOString(), well, completion_intervals, comments };
   }
 
-  function fieldComment(fieldRow) {
-    const input = fieldRow.querySelector('.field-comment');
-    return input ? input.value : '';
-  }
+  // Keep the familiar long CSV layout. The final Row Type column adds
+  // structural rows so blank interval/body blocks and the timestamp survive.
+  const CSV_HEADER = ['Category', 'Subcategory', 'Parameter', 'Completion Interval', 'Sand Body',
+    'Value', 'Unit', 'Comment', 'Row Type'];
 
-  function collectCsvRows() {
-    const rows = [];
-    const pushRows = (root, compIdx, sbIdx) => {
-      walkVisibleFields(root, (sub, fr) => {
-        const val = readFieldValue(fr);
-        const comment = fieldComment(fr);
-        if (val === null && comment === '') return;
-        rows.push([sub.dataset.category, sub.dataset.subcategory, fieldParam(fr),
-          compIdx, sbIdx, Array.isArray(val) ? val.join(' / ') : (val === null ? '' : val),
-          fr.querySelector('.field-unit').textContent, comment]);
+  function collectCsvRows(record) {
+    const rows = [['', '', 'generated_at', '', '', record.generated_at, '', '', 'metadata']];
+    function pushFields(root, values, comments, compIndex, sandIndex) {
+      walkFields(root, false, (sub, fr) => {
+        const category = sub.dataset.category, subcategory = sub.dataset.subcategory, parameter = fieldParam(fr);
+        const value = bucketValue(values, category, subcategory, parameter);
+        const comment = bucketValue(comments, category, subcategory, parameter);
+        if (value === null && comment === null) return;
+        rows.push([category, subcategory, parameter, compIndex, sandIndex,
+          Array.isArray(value) ? JSON.stringify(value) : (value ?? ''),
+          fr.querySelector('.field-unit').textContent, comment ?? '', 'field']);
       });
-    };
-    pushRows(wellSection, '', '');
-    document.getElementById('completion-intervals-container').querySelectorAll(':scope > .completion-instance').forEach((compSection) => {
-      const compIdx = compSection.dataset.intervalIndex;
-      pushRows(compSection.querySelector('.own-fields'), compIdx, '');
-      compSection.querySelectorAll(':scope > .sand-body-nest > .sand-bodies-container > .sand-body-instance').forEach((sbSection) => {
-        pushRows(sbSection, compIdx, sbSection.dataset.intervalIndex);
+    }
+    pushFields(wellSection, record.well, record.comments.well, '', '');
+    document.querySelectorAll('#completion-intervals-container > .completion-instance').forEach((comp, i) => {
+      const index = String(i + 1), data = record.completion_intervals[i];
+      const commentData = record.comments.completion_intervals[i];
+      rows.push(['', '', '', index, '', '', '', '', 'completion_interval']);
+      pushFields(comp.querySelector('.own-fields'), data.fields, commentData.fields, index, '');
+      comp.querySelectorAll(':scope > .sand-body-nest > .sand-bodies-container > .sand-body-instance').forEach((sb, j) => {
+        const sandIndex = String(j + 1);
+        rows.push(['', '', '', index, sandIndex, '', '', '', 'sand_body']);
+        pushFields(sb, data.sand_bodies[j], commentData.sand_bodies[j], index, sandIndex);
       });
     });
     return rows;
   }
 
   function toCsv(rows) {
-    const header = ['Category', 'Subcategory', 'Parameter', 'Completion Interval', 'Sand Body', 'Value', 'Unit', 'Comment'];
-    const escCell = (v) => '"' + String(v).replace(/"/g, '""') + '"';
-    return [header, ...rows].map((r) => r.map(escCell).join(',')).join('\\r\\n');
+    const quote = (value) => '"' + String(value).replace(/"/g, '""') + '"';
+    return [CSV_HEADER, ...rows].map((row) => row.map(quote).join(',')).join('\\r\\n');
+  }
+
+  function parseCsv(text) {
+    const source = text.replace(/^\\uFEFF/, '');
+    const rows = [], row = [];
+    let cell = '', quoted = false;
+    for (let i = 0; i < source.length; i += 1) {
+      const ch = source[i];
+      if (quoted) {
+        if (ch === '"' && source[i + 1] === '"') { cell += '"'; i += 1; }
+        else if (ch === '"') quoted = false;
+        else cell += ch;
+      } else if (ch === '"') {
+        if (cell !== '') throw new Error('Malformed CSV quoting.');
+        quoted = true;
+      } else if (ch === ',') {
+        row.push(cell); cell = '';
+      } else if (ch === '\\r' || ch === '\\n') {
+        row.push(cell); cell = '';
+        rows.push(row.splice(0));
+        if (ch === '\\r' && source[i + 1] === '\\n') i += 1;
+      } else {
+        cell += ch;
+      }
+    }
+    if (quoted) throw new Error('Unclosed quoted CSV cell.');
+    if (row.length || cell !== '') { row.push(cell); rows.push(row); }
+    return rows;
+  }
+
+  function csvToData(text) {
+    const rows = parseCsv(text);
+    if (!rows.length || rows[0].join('\\0') !== CSV_HEADER.join('\\0')) {
+      throw new Error('CSV columns do not match this form.');
+    }
+    const record = { generated_at: null, well: {}, completion_intervals: [],
+      comments: { well: {}, completion_intervals: [] } };
+
+    function requiredIndex(value, maximum, label) {
+      const n = Number(value);
+      if (!/^[1-9]\\d*$/.test(value) || n > maximum) throw new Error('Invalid ' + label + ' index: ' + value);
+      return n;
+    }
+    function completionAt(raw) {
+      const index = requiredIndex(raw, MAX_COMPLETION, 'Completion Interval');
+      while (record.completion_intervals.length < index) {
+        record.completion_intervals.push({ fields: {}, sand_bodies: [] });
+        record.comments.completion_intervals.push({ fields: {}, sand_bodies: [] });
+      }
+      return index - 1;
+    }
+    function sandBodyAt(comp, raw) {
+      const index = requiredIndex(raw, MAX_SAND_BODY, 'Sand Body');
+      while (record.completion_intervals[comp].sand_bodies.length < index) {
+        record.completion_intervals[comp].sand_bodies.push({});
+        record.comments.completion_intervals[comp].sand_bodies.push({});
+      }
+      return index - 1;
+    }
+
+    for (const row of rows.slice(1)) {
+      if (row.length !== CSV_HEADER.length) throw new Error('CSV row has the wrong number of columns.');
+      const [category, subcategory, parameter, compRaw, sandRaw, value, unit, comment, type] = row;
+      if (type === 'metadata') {
+        if (parameter !== 'generated_at') throw new Error('Unknown CSV metadata: ' + parameter);
+        record.generated_at = value;
+        continue;
+      }
+      if (type === 'completion_interval') { completionAt(compRaw); continue; }
+      if (type === 'sand_body') { sandBodyAt(completionAt(compRaw), sandRaw); continue; }
+      if (type !== 'field') throw new Error('Unknown CSV row type: ' + type);
+      let values = record.well, comments = record.comments.well, root = wellSection;
+      if (compRaw !== '') {
+        const comp = completionAt(compRaw);
+        const compSection = document.querySelector('#completion-intervals-container > .completion-instance');
+        if (sandRaw !== '') {
+          const sand = sandBodyAt(comp, sandRaw);
+          values = record.completion_intervals[comp].sand_bodies[sand];
+          comments = record.comments.completion_intervals[comp].sand_bodies[sand];
+          root = compSection.querySelector('.sand-body-instance');
+        } else {
+          values = record.completion_intervals[comp].fields;
+          comments = record.comments.completion_intervals[comp].fields;
+          root = compSection.querySelector('.own-fields');
+        }
+      } else if (sandRaw !== '') {
+        throw new Error('Sand Body index requires a Completion Interval index.');
+      }
+      const fieldRow = findFieldRow(root, category, subcategory, parameter);
+      if (!fieldRow) throw new Error('Unknown CSV field: ' + parameter);
+      if (unit !== fieldRow.querySelector('.field-unit').textContent) {
+        throw new Error('Unit does not match this form for ' + parameter + '.');
+      }
+      if (value !== '') {
+        const control = fieldRow.querySelector('[data-kind]');
+        const parsed = control.dataset.kind === 'multi_number' ? JSON.parse(value) : value;
+        if (bucketValue(values, category, subcategory, parameter) !== null) throw new Error('Duplicate CSV field: ' + parameter);
+        putBucketValue(values, category, subcategory, parameter, parsed);
+      }
+      if (comment !== '') putBucketValue(comments, category, subcategory, parameter, comment);
+    }
+    return record;
+  }
+
+  function findFieldRow(root, category, subcategory, parameter) {
+    for (const sub of root.querySelectorAll('.subcategory')) {
+      if (sub.dataset.category !== category || sub.dataset.subcategory !== subcategory) continue;
+      for (const fieldRow of sub.querySelectorAll('.field-row')) {
+        if (fieldParam(fieldRow) === parameter) return fieldRow;
+      }
+    }
+    return null;
+  }
+
+  function isObject(value) {
+    return value !== null && typeof value === 'object' && !Array.isArray(value);
+  }
+
+  function validateBucket(bucket, root, commentsOnly) {
+    if (!isObject(bucket)) throw new Error('A field group is not an object.');
+    for (const [category, subcategories] of Object.entries(bucket)) {
+      if (!isObject(subcategories)) throw new Error('Invalid subcategory in ' + category + '.');
+      for (const [subcategory, parameters] of Object.entries(subcategories)) {
+        if (!isObject(parameters)) throw new Error('Invalid fields in ' + subcategory + '.');
+        for (const [parameter, value] of Object.entries(parameters)) {
+          const row = findFieldRow(root, category, subcategory, parameter);
+          if (!row) throw new Error('Field is not in this form: ' + parameter);
+          if (commentsOnly) {
+            if (typeof value !== 'string') throw new Error('Comment must be text: ' + parameter);
+            continue;
+          }
+          const control = row.querySelector('[data-kind]');
+          if (control.dataset.kind === 'multi_number') {
+            if (!Array.isArray(value) || value.length !== control.querySelectorAll('input').length ||
+                value.some((v) => typeof v !== 'string' && typeof v !== 'number')) {
+              throw new Error('Invalid multi-value field: ' + parameter);
+            }
+          } else if (typeof value !== 'string' && typeof value !== 'number') {
+            throw new Error('Invalid field value: ' + parameter);
+          } else if (control.tagName === 'SELECT' &&
+                     !Array.from(control.options).some((option) => option.value === String(value))) {
+            throw new Error('Unknown option for ' + parameter + '.');
+          }
+        }
+      }
+    }
+  }
+
+  function validateImport(record) {
+    if (!isObject(record) || !Array.isArray(record.completion_intervals) ||
+        record.completion_intervals.length < 1 || record.completion_intervals.length > MAX_COMPLETION) {
+      throw new Error('File must contain 1 to ' + MAX_COMPLETION + ' Completion Intervals.');
+    }
+    const firstComp = document.querySelector('#completion-intervals-container > .completion-instance');
+    const completionRoot = firstComp.querySelector('.own-fields');
+    const sandRoot = firstComp.querySelector('.sand-body-instance');
+    validateBucket(record.well, wellSection, false);
+    const comments = record.comments ?? { well: {}, completion_intervals: record.completion_intervals.map(
+      (comp) => ({ fields: {}, sand_bodies: comp.sand_bodies.map(() => ({})) })) };
+    if (!isObject(comments) || !Array.isArray(comments.completion_intervals) ||
+        comments.completion_intervals.length !== record.completion_intervals.length) {
+      throw new Error('Comment groups do not match Completion Intervals.');
+    }
+    validateBucket(comments.well, wellSection, true);
+    record.completion_intervals.forEach((comp, i) => {
+      if (!isObject(comp) || !Array.isArray(comp.sand_bodies) ||
+          comp.sand_bodies.length < 1 || comp.sand_bodies.length > MAX_SAND_BODY) {
+        throw new Error('Each Completion Interval needs 1 to ' + MAX_SAND_BODY + ' Sand Bodies.');
+      }
+      const note = comments.completion_intervals[i];
+      if (!isObject(note) || !Array.isArray(note.sand_bodies) ||
+          note.sand_bodies.length !== comp.sand_bodies.length) {
+        throw new Error('Comment groups do not match Sand Bodies.');
+      }
+      validateBucket(comp.fields, completionRoot, false);
+      validateBucket(note.fields, completionRoot, true);
+      comp.sand_bodies.forEach((sand, j) => {
+        validateBucket(sand, sandRoot, false);
+        validateBucket(note.sand_bodies[j], sandRoot, true);
+      });
+    });
+    return comments;
+  }
+
+  function fillBucket(root, bucket, commentsOnly) {
+    for (const [category, subcategories] of Object.entries(bucket)) {
+      for (const [subcategory, parameters] of Object.entries(subcategories)) {
+        for (const [parameter, value] of Object.entries(parameters)) {
+          const row = findFieldRow(root, category, subcategory, parameter);
+          if (commentsOnly) {
+            row.querySelector('.field-comment').value = value;
+          } else {
+            const control = row.querySelector('[data-kind]');
+            if (control.dataset.kind === 'multi_number') {
+              control.querySelectorAll('input').forEach((input, i) => { input.value = value[i]; });
+            } else {
+              control.value = value;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  function restoreData(record) {
+    const comments = validateImport(record); // Check before replacing anything the user has typed.
+    while (completionRepeater.count > record.completion_intervals.length) completionRepeater.removeLast();
+    while (completionRepeater.count < record.completion_intervals.length) completionRepeater.add();
+    sandForm.querySelectorAll('[data-param]').forEach(clearControl);
+    sandForm.querySelectorAll('.field-comment').forEach((input) => { input.value = ''; });
+    fillBucket(wellSection, record.well, false);
+    fillBucket(wellSection, comments.well, true);
+    evaluateVisibility(wellSection);
+    document.querySelectorAll('#completion-intervals-container > .completion-instance').forEach((comp, i) => {
+      const data = record.completion_intervals[i], note = comments.completion_intervals[i];
+      const repeater = comp.sandBodyRepeater;
+      while (repeater.count > data.sand_bodies.length) repeater.removeLast();
+      while (repeater.count < data.sand_bodies.length) repeater.add();
+      fillBucket(comp.querySelector('.own-fields'), data.fields, false);
+      fillBucket(comp.querySelector('.own-fields'), note.fields, true);
+      evaluateVisibility(comp.querySelector('.own-fields'));
+      comp.querySelectorAll(':scope > .sand-body-nest > .sand-bodies-container > .sand-body-instance').forEach((sb, j) => {
+        fillBucket(sb, data.sand_bodies[j], false);
+        fillBucket(sb, note.sand_bodies[j], true);
+        evaluateVisibility(sb);
+      });
+    });
   }
 
   // Exports are named from the well's anonymized label and identification
@@ -727,20 +987,41 @@ JS = """
     URL.revokeObjectURL(url);
   }
 
-  document.getElementById('export-json-btn').addEventListener('click', () => {
-    // reportValidity() checks the required/min/max/minlength/pattern constraints
-    // of every enabled field and shows the browser's native tooltip on the first
-    // invalid one -- since the buttons are type="button" and the form itself has
-    // onsubmit="return false;" (there's no real submit to trigger this check for
-    // us), export is the only point that can trigger it. Fields hidden by a
-    // conditional rule are skipped only because evaluateVisibility disables
-    // them; being hidden is not by itself an exemption (see isRuleHidden).
-    if (!sandForm.reportValidity()) return;
-    download(exportBaseName() + '.json', JSON.stringify(collectData(), null, 2), 'application/json');
-  });
-  document.getElementById('export-csv-btn').addEventListener('click', () => {
-    if (!sandForm.reportValidity()) return;
-    download(exportBaseName() + '.csv', toCsv(collectCsvRows()), 'text/csv');
+  function saveFile(format, draft) {
+    if (!draft && !sandForm.reportValidity()) return;
+    const record = collectData();
+    const suffix = draft ? '_draft' : '';
+    if (format === 'json') {
+      download(exportBaseName() + suffix + '.json', JSON.stringify(record, null, 2), 'application/json');
+    } else {
+      download(exportBaseName() + suffix + '.csv', toCsv(collectCsvRows(record)), 'text/csv');
+    }
+  }
+
+  document.getElementById('export-json-btn').addEventListener('click', () => saveFile('json', false));
+  document.getElementById('export-csv-btn').addEventListener('click', () => saveFile('csv', false));
+  document.getElementById('draft-json-btn').addEventListener('click', () => saveFile('json', true));
+  document.getElementById('draft-csv-btn').addEventListener('click', () => saveFile('csv', true));
+
+  const importInput = document.getElementById('import-file');
+  const importStatus = document.getElementById('import-status');
+  document.getElementById('import-btn').addEventListener('click', () => importInput.click());
+  importInput.addEventListener('change', async () => {
+    const file = importInput.files[0];
+    if (!file) return;
+    try {
+      const content = await file.text();
+      const record = file.name.toLowerCase().endsWith('.csv') ? csvToData(content) : JSON.parse(content);
+      validateImport(record);
+      if (!window.confirm('Importing will replace the current form entries. Continue?')) return;
+      restoreData(record);
+      importStatus.textContent = 'Loaded ' + file.name + '.';
+    } catch (error) {
+      importStatus.textContent = 'Could not load ' + file.name + ': ' + error.message;
+      window.alert(importStatus.textContent);
+    } finally {
+      importInput.value = '';
+    }
   });
 })();
 """
@@ -774,7 +1055,7 @@ def render_html(model: dict, max_completion: int = DEFAULT_MAX_COMPLETION,
 <body>
 <header class="page-header">
   <h1>Sand Control Failure Record Form &mdash; Producer Wells</h1>
-  <p>Fill in the fields below, then use Export JSON / Export CSV to save your record. Hover the <strong>?</strong> icon next to a field for guidance.</p>
+  <p>Save a draft as JSON or CSV to resume later. Import a saved file to restore it. Export JSON or CSV when the record is complete. Hover the <strong>?</strong> icon next to a field for guidance.</p>
   {validity_notice}
   <p id="expired-banner" class="expired-banner" style="display:none;">
     This form has expired and is no longer accepting submissions. Please contact your Sand Control Failure DB
@@ -793,8 +1074,13 @@ def render_html(model: dict, max_completion: int = DEFAULT_MAX_COMPLETION,
   </form>
 </main>
 <div class="export-bar">
+  <input type="file" id="import-file" accept=".json,.csv,application/json,text/csv" hidden>
+  <button type="button" id="import-btn">Import File</button>
+  <button type="button" id="draft-json-btn">Save Draft JSON</button>
+  <button type="button" id="draft-csv-btn">Save Draft CSV</button>
   <button type="button" id="export-json-btn">Export as JSON</button>
   <button type="button" id="export-csv-btn">Export as CSV</button>
+  <p id="import-status" role="status" aria-live="polite"></p>
 </div>
 <script>{js}</script>
 </body>

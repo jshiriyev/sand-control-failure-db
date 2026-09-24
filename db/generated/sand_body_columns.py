@@ -24,7 +24,7 @@ SAND_BODY_COLUMNS = [
     Column("psd_d50", Numeric, nullable=True, comment="PSD D10/D25/D40/D50/D75/D90"),
     Column("psd_d75", Numeric, nullable=True, comment="PSD D10/D25/D40/D50/D75/D90"),
     Column("psd_d90", Numeric, nullable=True, comment="PSD D10/D25/D40/D50/D75/D90"),
-    Column("fines_content", Numeric, nullable=True, comment="Fines Content"),
+    Column("fines_content_sub_44_microns", Numeric, nullable=True, comment="Fines Content (Sub 44 microns)"),
     Column("initial_pi", Numeric, nullable=True, comment="Initial PI"),
     Column("porosity", Numeric, nullable=True, comment="Porosity"),
     Column("permeability", Numeric, nullable=True, comment="Permeability"),

@@ -87,6 +87,7 @@ def build_record_response(well: Well) -> RecordOut:
         organization_id=well.organization_id,
         created_at=well.created_at,
         submitted_at=well.submitted_at,
+        comments=(well.raw_payload or {}).get("comments"),
         well=build_record_out(_row_columns(well, _WELL_STRUCTURAL_COLUMNS), scope="well"),
         completion_intervals=completion_intervals_out,
     )

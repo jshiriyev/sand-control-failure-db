@@ -932,6 +932,31 @@
     "table": "completion_interval",
     "unit": ""
   },
+  "completion_interval::Completion::Liners and Screens::Screen Size Selection": {
+    "category": "Completion",
+    "db_columns": [
+      "screen_size_selection"
+    ],
+    "db_type": "Text",
+    "kind": "select",
+    "max_length": null,
+    "max_value": null,
+    "min_length": null,
+    "min_value": null,
+    "options": [
+      "Screen retention test",
+      "Rule of thumb",
+      "Company standard"
+    ],
+    "parameter": "Screen Size Selection",
+    "pattern": null,
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "Liners and Screens",
+    "table": "completion_interval",
+    "unit": ""
+  },
   "completion_interval::Completion::Liners and Screens::Screen Type": {
     "category": "Completion",
     "db_columns": [
@@ -1361,26 +1386,26 @@
     "table": "completion_interval",
     "unit": ""
   },
-  "completion_interval::Wellbore::Wellbore properties::Completion Interval Length": {
+  "completion_interval::Wellbore::Wellbore properties::Well Deviation": {
     "category": "Wellbore",
     "db_columns": [
-      "completion_interval_length"
+      "well_deviation"
     ],
     "db_type": "Numeric",
     "kind": "number",
     "max_length": null,
-    "max_value": null,
+    "max_value": 90,
     "min_length": null,
     "min_value": 0,
     "options": [],
-    "parameter": "Completion Interval Length",
+    "parameter": "Well Deviation",
     "pattern": null,
     "required": false,
     "scope": "completion_interval",
     "step": null,
     "subcategory": "Wellbore properties",
     "table": "completion_interval",
-    "unit": ""
+    "unit": "degrees"
   },
   "sand_body::Pre-production and cleanup::Pre-production and cleanup details::Percentage of ideal PI or skin achieved": {
     "category": "Pre-production and cleanup",
@@ -1527,10 +1552,10 @@
     "table": "sand_body",
     "unit": "psi"
   },
-  "sand_body::Reservoir Characterization::Reservoir Rock and Fluid Properties::Fines Content": {
+  "sand_body::Reservoir Characterization::Reservoir Rock and Fluid Properties::Fines Content (Sub 44 microns)": {
     "category": "Reservoir Characterization",
     "db_columns": [
-      "fines_content"
+      "fines_content_sub_44_microns"
     ],
     "db_type": "Numeric",
     "kind": "number",
@@ -1539,7 +1564,7 @@
     "min_length": null,
     "min_value": 0,
     "options": [],
-    "parameter": "Fines Content",
+    "parameter": "Fines Content (Sub 44 microns)",
     "pattern": null,
     "required": false,
     "scope": "sand_body",

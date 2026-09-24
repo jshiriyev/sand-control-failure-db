@@ -10,6 +10,17 @@ def test_fetch_round_trips_submitted_data(client, seeded_org, make_payload):
     _, token = seeded_org
     payload = make_payload()
     payload["well"]["Well Specific"]["Well & Field Identification"]["Well name (anonymized)"] = "FETCHTEST"
+    payload["comments"] = {
+        "well": {"Well Specific": {"Well & Field Identification": {"Well name (anonymized)": "Private label"}}},
+        "completion_intervals": [{
+            "fields": {"Wellbore": {"Wellbore properties": {"Well Deviation": "Estimated"}}},
+            "sand_bodies": [{
+                "Reservoir Characterization": {
+                    "Reservoir Rock and Fluid Properties": {"Fines Content (Sub 44 microns)": "Lab result pending"}
+                }
+            }],
+        }],
+    }
     submit_resp = client.post("/records", json=payload, headers=_auth(token))
     assert submit_resp.status_code == 201, submit_resp.text
     record_id = submit_resp.json()["id"]
@@ -21,6 +32,7 @@ def test_fetch_round_trips_submitted_data(client, seeded_org, make_payload):
     assert ident["Well name (anonymized)"] == "FETCHTEST"
     assert len(body["completion_intervals"]) == 1
     assert len(body["completion_intervals"][0]["sand_bodies"]) == 1
+    assert body["comments"] == payload["comments"]
 
 
 def test_fetch_unknown_record_returns_404(client, seeded_org):

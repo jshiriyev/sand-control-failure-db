@@ -57,7 +57,7 @@ Columns, in order:
 | `Affected Parameter` | Conditional-visibility rule targeting a single Parameter (see below) |
 | `Data Validation` | Constraint/options -- format depends on Input Type, see below |
 | `Tooltip` | Plain-language guidance shown as a "?" icon next to the field in the generated form. Optional -- a row with a blank cell simply renders with no "?" icon. |
-| `User comment` | SME/reviewer feedback on the dictionary itself, collected during schema review. Not rendered into the form or stored anywhere -- purely a scratch column for iterating on the dictionary with subject matter experts. A per-field "comments" feature of the *form itself* may be built later; that would be a distinct, not-yet-built feature from this column. |
+| `User comment` | SME/reviewer feedback on the dictionary itself, collected during schema review. Not rendered into the form or stored anywhere -- purely a scratch column for iterating on the dictionary with subject matter experts. Per-field form comments are a separate feature: the form exports them and the API retains them in raw_payload. |
 
 ### Scope hierarchy
 
@@ -154,16 +154,19 @@ segment-recovery fallback described above. Zero cells fail outright.
 - Conditional visibility (`data-show-if`/`data-hide-if`) is evaluated per block
   instance, scoped to that instance's own DOM subtree, so cloned blocks behave
   independently.
-- **Export as JSON**: `{ generated_at, well: {Category: {Subcategory: {Parameter:
-  value}}}, completion_intervals: [ { fields: {...}, sand_bodies: [{...}, ...]
-  }, ... ] }`. This exact shape is also the backend's `POST /records` ingest payload
-  shape (see below) -- wiring the form's export buttons to actually POST to a live API
-  instead of downloading a file is a deliberate next step, not yet built.
-- **Export as CSV**: long format `Category, Subcategory, Parameter, Completion
-  Interval, Sand Body, Value, Unit` (interval-index columns blank for
-  well-scope rows).
-- No backend calls from the static form today -- both exports are client-side (`Blob` +
-  download link).
+- **JSON and CSV files both round-trip the form state**, including field comments
+  and the number/order of Completion Intervals and Sand Bodies. JSON keeps the
+  original payload structure and adds a parallel comments tree. The backend
+  accepts that shape and preserves comments in raw_payload for record fetches.
+- **CSV** remains long format with Category, Subcategory, Parameter, Completion
+  Interval, Sand Body, Value, Unit, and Comment; a final Row Type column marks
+  fields, the timestamp, Completion Intervals, and Sand Bodies. Multi-number
+  values use a JSON array in the Value cell so missing positions survive.
+- **Save Draft JSON / CSV** saves partial records without requiring validation.
+  **Export as JSON / CSV** still validates visible fields. **Import File**
+  accepts either format and replaces current entries after confirmation.
+  Files are read and written in the browser; the static form makes no backend call.
+  Wiring exports to a live API remains a separate step.
 
 ## Color system
 

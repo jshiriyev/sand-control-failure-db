@@ -28,5 +28,6 @@ class RecordOut(BaseModel):
     organization_id: int
     created_at: datetime
     submitted_at: datetime | None
+    comments: dict[str, Any] | None = None
     well: Bucket
     completion_intervals: list[CompletionIntervalOut]

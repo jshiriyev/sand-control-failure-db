@@ -9,6 +9,10 @@ form, the PostgreSQL schema, and the FastAPI backend's validation rules.
 web form  -->  FastAPI backend  -->  PostgreSQL
 ```
 
+The standalone form can save incomplete drafts as JSON or CSV and import
+either format later. Both files preserve entered values, comments, and the
+Completion Interval / Sand Body layout; final exports still validate the form.
+
 This repository is the durable source of truth for the whole system --
 schema, migrations, backend, form, tests, and configuration. It does **not**
 contain the production database itself, any real well data, or any real
