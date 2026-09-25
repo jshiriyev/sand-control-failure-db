@@ -10,6 +10,7 @@ def test_fetch_round_trips_submitted_data(client, seeded_org, make_payload):
     _, token = seeded_org
     payload = make_payload()
     payload["well"]["Well Specific"]["Well & Field Identification"]["Well name (anonymized)"] = "FETCHTEST"
+    payload["record_status"] = "complete"
     payload["comments"] = {
         "well": {"Well Specific": {"Well & Field Identification": {"Well name (anonymized)": "Private label"}}},
         "completion_intervals": [{
@@ -33,6 +34,7 @@ def test_fetch_round_trips_submitted_data(client, seeded_org, make_payload):
     assert len(body["completion_intervals"]) == 1
     assert len(body["completion_intervals"][0]["sand_bodies"]) == 1
     assert body["comments"] == payload["comments"]
+    assert body["record_status"] == "complete"
 
 
 def test_fetch_unknown_record_returns_404(client, seeded_org):

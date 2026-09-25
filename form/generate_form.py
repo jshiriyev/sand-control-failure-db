@@ -95,9 +95,9 @@ COUNTER_ROLES = {
 # it is the constrained one (7+ alphanumeric), which keeps the filename
 # distinct even when two submissions choose the same free-text label.
 #
-# Matched by exact Parameter name, same convention as COUNTER_ROLES: if the
-# dictionary renames one, that lookup simply misses and its part drops out of
-# the filename; if every lookup misses, exports fall back to a generic name.
+# Matched by exact Parameter name, same convention as COUNTER_ROLES. A missing
+# or unusable name becomes "Unnamed"; the anonymized ID is included when
+# available, which also gives partially filled drafts a recognizable filename.
 EXPORT_NAME_PARAMS = (
     "Well name (anonymized)",
     "Well identification number (anonymized)",
@@ -397,10 +397,17 @@ input.mn-input { padding: .35rem .25rem; text-align: center; }
 .add-sand-body-btn { background: var(--header-bg); color: #fff; border: none; border-radius: 4px; padding: .4rem .8rem; cursor: pointer; font-size: .82rem; }
 .add-sand-body-btn:disabled { background: #9aa; cursor: not-allowed; }
 .sand-bodies-container { display: flex; flex-direction: column; gap: .75rem; }
-.export-bar { position: sticky; bottom: 0; background: #fff; border-top: 2px solid var(--header-bg); padding: .75rem 1rem; display: flex; flex-wrap: wrap; gap: .75rem; justify-content: flex-end; max-width: 1280px; margin: 0 auto; }
+.export-bar { position: sticky; z-index: 20; bottom: 0; background: #fff; border-top: 2px solid var(--header-bg); padding: .75rem 1rem; display: flex; flex-wrap: wrap; gap: .75rem; justify-content: flex-end; max-width: 1280px; margin: 0 auto; }
 #import-status { flex-basis: 100%; margin: 0; font-size: .85rem; text-align: right; }
-.export-bar button { background: var(--header-bg); color: #fff; border: none; border-radius: 4px; padding: .55rem 1.1rem; cursor: pointer; font-size: .9rem; }
-.export-bar button:hover { opacity: .9; }
+#import-status:empty { display: none; }
+.export-bar button, .file-action-menu summary { background: var(--header-bg); color: #fff; border: none; border-radius: 4px; padding: .55rem 1.1rem; cursor: pointer; font-size: .9rem; }
+.export-bar button:hover, .file-action-menu summary:hover { opacity: .9; }
+.file-action-menu { position: relative; }
+.file-action-menu summary { display: block; list-style: none; }
+.file-action-menu summary::-webkit-details-marker { display: none; }
+.file-action-options { position: absolute; right: 0; bottom: calc(100% + .35rem); min-width: 100%; padding: .35rem; display: flex; flex-direction: column; gap: .3rem; background: #fff; border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 3px 8px #0002; }
+.file-action-menu:not([open]) .file-action-options { display: none; }
+.file-action-options button { white-space: nowrap; text-align: left; }
 """
 
 JS = """
@@ -418,11 +425,13 @@ JS = """
     document.getElementById('expired-banner').style.display = '';
     document.querySelectorAll('#sand-form input, #sand-form select, #sand-form textarea, #sand-form button')
       .forEach((el) => { el.disabled = true; });
-    document.getElementById('export-json-btn').disabled = true;
-    document.getElementById('export-csv-btn').disabled = true;
-    document.getElementById('draft-json-btn').disabled = true;
-    document.getElementById('draft-csv-btn').disabled = true;
     document.getElementById('import-btn').disabled = true;
+    document.querySelectorAll('.file-action-menu').forEach((menu) => {
+      menu.open = false;
+      menu.inert = true;
+      menu.setAttribute('aria-disabled', 'true');
+      menu.querySelectorAll('button').forEach((button) => { button.disabled = true; });
+    });
     return;
   }
 
@@ -675,7 +684,10 @@ JS = """
     'Value', 'Unit', 'Comment', 'Row Type'];
 
   function collectCsvRows(record) {
-    const rows = [['', '', 'generated_at', '', '', record.generated_at, '', '', 'metadata']];
+    const rows = [
+      ['', '', 'generated_at', '', '', record.generated_at, '', '', 'metadata'],
+      ['', '', 'record_status', '', '', record.record_status, '', '', 'metadata'],
+    ];
     function pushFields(root, values, comments, compIndex, sandIndex) {
       walkFields(root, false, (sub, fr) => {
         const category = sub.dataset.category, subcategory = sub.dataset.subcategory, parameter = fieldParam(fr);
@@ -740,7 +752,7 @@ JS = """
     if (!rows.length || rows[0].join('\\0') !== CSV_HEADER.join('\\0')) {
       throw new Error('CSV columns do not match this form.');
     }
-    const record = { generated_at: null, well: {}, completion_intervals: [],
+    const record = { generated_at: null, record_status: null, well: {}, completion_intervals: [],
       comments: { well: {}, completion_intervals: [] } };
 
     function requiredIndex(value, maximum, label) {
@@ -769,8 +781,9 @@ JS = """
       if (row.length !== CSV_HEADER.length) throw new Error('CSV row has the wrong number of columns.');
       const [category, subcategory, parameter, compRaw, sandRaw, value, unit, comment, type] = row;
       if (type === 'metadata') {
-        if (parameter !== 'generated_at') throw new Error('Unknown CSV metadata: ' + parameter);
-        record.generated_at = value;
+        if (parameter === 'generated_at') record.generated_at = value;
+        else if (parameter === 'record_status') record.record_status = value;
+        else throw new Error('Unknown CSV metadata: ' + parameter);
         continue;
       }
       if (type === 'completion_interval') { completionAt(compRaw); continue; }
@@ -854,7 +867,11 @@ JS = """
   }
 
   function validateImport(record) {
-    if (!isObject(record) || !Array.isArray(record.completion_intervals) ||
+    if (!isObject(record) || (record.record_status != null &&
+        record.record_status !== 'draft' && record.record_status !== 'complete')) {
+      throw new Error('Unknown file status.');
+    }
+    if (!Array.isArray(record.completion_intervals) ||
         record.completion_intervals.length < 1 || record.completion_intervals.length > MAX_COMPLETION) {
       throw new Error('File must contain 1 to ' + MAX_COMPLETION + ' Completion Intervals.');
     }
@@ -962,20 +979,15 @@ JS = """
   }
 
   function exportBaseName() {
-    const parts = EXPORT_NAME_PARAMS
-      .map((param) => {
-        const field = findParamField(wellSection, param);
-        return safeFilenamePart(field ? field.value : '');
-      })
-      .filter((part) => part !== '');
-    // Both source fields are required, so by the time an export can run these
-    // normally hold real values. Dropping empty parts rather than joining them
-    // blindly keeps the filename clean when one is missing -- which happens if
-    // the dictionary renames a Parameter (that lookup misses) or if a value is
-    // made entirely of characters a filename cannot carry.
-    const base = parts.join('_');
-    if (!base) return 'sand_control_record';
-    return RESERVED_FILENAMES.test(base) ? `well_${base}` : base;
+    const nameField = findParamField(wellSection, EXPORT_NAME_PARAMS[0]);
+    const idField = findParamField(wellSection, EXPORT_NAME_PARAMS[1]);
+    // Drafts can be saved before the required well name is entered. Keep the
+    // same anonymized-name + ID pattern used by completed exports, but make
+    // the missing name explicit instead of producing an ID-only filename.
+    const name = safeFilenamePart(nameField ? nameField.value : '') || 'Unnamed';
+    const identifier = safeFilenamePart(idField ? idField.value : '');
+    const base = [name, identifier].filter((part) => part !== '').join('_');
+    return RESERVED_FILENAMES.test(base) ? 'well_' + base : base;
   }
 
   function download(filename, content, mime) {
@@ -990,7 +1002,10 @@ JS = """
   function saveFile(format, draft) {
     if (!draft && !sandForm.reportValidity()) return;
     const record = collectData();
-    const suffix = draft ? '_draft' : '';
+    // The filename helps people distinguish files in a folder; this marker
+    // survives a rename and lets the JSON/CSV importers identify the status.
+    record.record_status = draft ? 'draft' : 'complete';
+    const suffix = draft ? '_draft' : '_complete';
     if (format === 'json') {
       download(exportBaseName() + suffix + '.json', JSON.stringify(record, null, 2), 'application/json');
     } else {
@@ -998,10 +1013,16 @@ JS = """
     }
   }
 
-  document.getElementById('export-json-btn').addEventListener('click', () => saveFile('json', false));
-  document.getElementById('export-csv-btn').addEventListener('click', () => saveFile('csv', false));
-  document.getElementById('draft-json-btn').addEventListener('click', () => saveFile('json', true));
-  document.getElementById('draft-csv-btn').addEventListener('click', () => saveFile('csv', true));
+  // Only three actions are shown in the footer. JSON and CSV are choices
+  // within the draft and completed-export menus, so users first choose the
+  // operation and then its file format. Both choices call the same serializer.
+  document.querySelectorAll('.file-action-menu button[data-format]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const menu = button.closest('.file-action-menu');
+      saveFile(button.dataset.format, menu.dataset.mode === 'draft');
+      menu.open = false;
+    });
+  });
 
   const importInput = document.getElementById('import-file');
   const importStatus = document.getElementById('import-status');
@@ -1015,7 +1036,8 @@ JS = """
       validateImport(record);
       if (!window.confirm('Importing will replace the current form entries. Continue?')) return;
       restoreData(record);
-      importStatus.textContent = 'Loaded ' + file.name + '.';
+      importStatus.textContent = 'Loaded ' + file.name +
+        (record.record_status ? ' (' + record.record_status + ')' : '') + '.';
     } catch (error) {
       importStatus.textContent = 'Could not load ' + file.name + ': ' + error.message;
       window.alert(importStatus.textContent);
@@ -1055,7 +1077,7 @@ def render_html(model: dict, max_completion: int = DEFAULT_MAX_COMPLETION,
 <body>
 <header class="page-header">
   <h1>Sand Control Failure Record Form &mdash; Producer Wells</h1>
-  <p>Save a draft as JSON or CSV to resume later. Import a saved file to restore it. Export JSON or CSV when the record is complete. Hover the <strong>?</strong> icon next to a field for guidance.</p>
+  <p>Import a saved file, save an unfinished draft, or export a completed record. JSON and CSV are available for both saves. Hover the <strong>?</strong> icon next to a field for guidance.</p>
   {validity_notice}
   <p id="expired-banner" class="expired-banner" style="display:none;">
     This form has expired and is no longer accepting submissions. Please contact your Sand Control Failure DB
@@ -1075,11 +1097,21 @@ def render_html(model: dict, max_completion: int = DEFAULT_MAX_COMPLETION,
 </main>
 <div class="export-bar">
   <input type="file" id="import-file" accept=".json,.csv,application/json,text/csv" hidden>
-  <button type="button" id="import-btn">Import File</button>
-  <button type="button" id="draft-json-btn">Save Draft JSON</button>
-  <button type="button" id="draft-csv-btn">Save Draft CSV</button>
-  <button type="button" id="export-json-btn">Export as JSON</button>
-  <button type="button" id="export-csv-btn">Export as CSV</button>
+  <button type="button" id="import-btn">Import file</button>
+  <details class="file-action-menu" data-mode="draft">
+    <summary>Save draft &#9662;</summary>
+    <div class="file-action-options">
+      <button type="button" data-format="json">Save JSON draft</button>
+      <button type="button" data-format="csv">Save CSV draft</button>
+    </div>
+  </details>
+  <details class="file-action-menu" data-mode="complete">
+    <summary>Export completed record &#9662;</summary>
+    <div class="file-action-options">
+      <button type="button" data-format="json">Export JSON</button>
+      <button type="button" data-format="csv">Export CSV</button>
+    </div>
+  </details>
   <p id="import-status" role="status" aria-live="polite"></p>
 </div>
 <script>{js}</script>

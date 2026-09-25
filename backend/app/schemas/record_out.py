@@ -5,7 +5,7 @@ db.mapping.build_record_out().
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel
 
@@ -28,6 +28,7 @@ class RecordOut(BaseModel):
     organization_id: int
     created_at: datetime
     submitted_at: datetime | None
+    record_status: Literal["draft", "complete"] | None = None
     comments: dict[str, Any] | None = None
     well: Bucket
     completion_intervals: list[CompletionIntervalOut]

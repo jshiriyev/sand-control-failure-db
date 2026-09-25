@@ -1012,6 +1012,27 @@
     "table": "completion_interval",
     "unit": ""
   },
+  "completion_interval::Completion::OH Drilling Details::Bridging Agent Loading": {
+    "category": "Completion",
+    "db_columns": [
+      "bridging_agent_loading"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_length": null,
+    "max_value": null,
+    "min_length": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Bridging Agent Loading",
+    "pattern": null,
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "OH Drilling Details",
+    "table": "completion_interval",
+    "unit": "lb/bbl"
+  },
   "completion_interval::Completion::OH Drilling Details::Drill Bit Size": {
     "category": "Completion",
     "db_columns": [
@@ -1154,6 +1175,27 @@
     "subcategory": "OH Drilling Details",
     "table": "completion_interval",
     "unit": ""
+  },
+  "completion_interval::Completion::OH Drilling Details::Weighting Agent Loading": {
+    "category": "Completion",
+    "db_columns": [
+      "weighting_agent_loading"
+    ],
+    "db_type": "Numeric",
+    "kind": "number",
+    "max_length": null,
+    "max_value": null,
+    "min_length": null,
+    "min_value": 0,
+    "options": [],
+    "parameter": "Weighting Agent Loading",
+    "pattern": null,
+    "required": false,
+    "scope": "completion_interval",
+    "step": null,
+    "subcategory": "OH Drilling Details",
+    "table": "completion_interval",
+    "unit": "lb/bbl"
   },
   "completion_interval::Completion::Open Hole Details::Casing Size above OH": {
     "category": "Completion",

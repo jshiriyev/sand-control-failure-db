@@ -30,6 +30,15 @@ def test_submit_happy_path_creates_rows_in_all_three_tables(client, seeded_org, 
     assert len(well.completion_intervals[0].sand_bodies) == 1
 
 
+def test_submit_explicit_draft_returns_422(client, seeded_org, make_payload):
+    _, token = seeded_org
+    payload = make_payload()
+    payload["record_status"] = "draft"
+    resp = client.post("/records", json=payload, headers=_auth(token))
+    assert resp.status_code == 422
+    assert "Draft files cannot be submitted" in resp.text
+
+
 def test_submit_missing_required_field_returns_422(client, seeded_org, make_payload):
     _, token = seeded_org
     payload = make_payload()

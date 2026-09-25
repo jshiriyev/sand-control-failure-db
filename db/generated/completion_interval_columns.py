@@ -17,6 +17,8 @@ COMPLETION_INTERVAL_COLUMNS = [
     Column("reservoir_drilling_fluid_density", Numeric, nullable=True, comment="Reservoir Drilling Fluid Density"),
     Column("weighting_agent", Text, nullable=True, comment="Weighting Agent"),
     Column("additional_bridging_agent", Text, nullable=True, comment="Additional Bridging Agent"),
+    Column("weighting_agent_loading", Numeric, nullable=True, comment="Weighting Agent Loading"),
+    Column("bridging_agent_loading", Numeric, nullable=True, comment="Bridging Agent Loading"),
     Column("mud_psd_d10", Numeric, nullable=True, comment="Mud PSD D10/D25/D40/D50/D75/D90"),
     Column("mud_psd_d25", Numeric, nullable=True, comment="Mud PSD D10/D25/D40/D50/D75/D90"),
     Column("mud_psd_d40", Numeric, nullable=True, comment="Mud PSD D10/D25/D40/D50/D75/D90"),

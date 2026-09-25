@@ -20,7 +20,7 @@ architecture" below).
 ## File inventory
 
 - `MASTER.xlsx` -- **the source of truth**. Sheet `MasterView`, one row per Parameter
-  (138 currently). Shared input to both `form/generate_form.py` and `db/codegen.py` via
+  (150 currently). Shared input to both `form/generate_form.py` and `db/codegen.py` via
   the `dictionary` package -- nothing else reads it directly.
 - `dictionary/` -- the shared parser for `MASTER.xlsx`. Owns the data model (`ParamRow`,
   `FieldSpec`), the cell-DSL parsers, and `classify_field()`. Both `form/` and `db/`
@@ -67,7 +67,7 @@ Well  (rendered once per record)
       └── Sand Body {id}  (repeatable -- a completion interval has 1+ sand bodies)
 ```
 
-Current row distribution: `Well`=62, `Completion Interval {id}`=47, `Sand Body {id}`=29.
+Current row distribution: Well=59, Completion Interval=62, Sand Body=29.
 Drilling, Completion (incl. Sand Control equipment: Completion Type, Screen Type, Gravel
 Pack details, etc.) live at Completion Interval scope, meaning multiple Sand Bodies
 within one Completion Interval share a single drilling/completion/sand-control design
@@ -128,7 +128,7 @@ revealing a Parameter in a different Category after the `Sand Control` -> `Compl
 consolidation, see "Known open items").
 
 The parser is fully consistent on the current sheet -- every `Affected Subcategory` /
-`Affected Parameter` cell, and 136 of 138 `Data Validation` cells, parse cleanly via
+`Affected Parameter` cell, and nearly all `Data Validation` cells, parse cleanly via
 plain `ast.literal_eval`; the remaining 2 (both multi-number Text cells) parse via the
 segment-recovery fallback described above. Zero cells fail outright.
 
@@ -162,11 +162,16 @@ segment-recovery fallback described above. Zero cells fail outright.
   Interval, Sand Body, Value, Unit, and Comment; a final Row Type column marks
   fields, the timestamp, Completion Intervals, and Sand Bodies. Multi-number
   values use a JSON array in the Value cell so missing positions survive.
-- **Save Draft JSON / CSV** saves partial records without requiring validation.
-  **Export as JSON / CSV** still validates visible fields. **Import File**
-  accepts either format and replaces current entries after confirmation.
+- The footer has **Import file**, **Save draft**, and **Export completed record**
+  actions; the latter two offer JSON and CSV in menus. Drafts save partial records
+  without validation; completed exports validate visible fields. Filenames end
+  in _draft or _complete, and both formats record the same status internally
+  (record_status in JSON, a metadata row in CSV). Missing anonymized names
+  use Unnamed, with the anonymized ID appended when available.
+- Import accepts either format and replaces current entries after confirmation.
   Files are read and written in the browser; the static form makes no backend call.
-  Wiring exports to a live API remains a separate step.
+  The API rejects an explicit draft marker on record submission. Wiring exports
+  to a live API remains a separate step.
 
 ## Color system
 
@@ -195,13 +200,13 @@ ownership:
   only credential stored; the plaintext token is shown once, at creation time.
 - `well` -- structural/audit columns (`id`, `organization_id`, `created_at`,
   `updated_at`, `submitted_at`, `raw_payload` JSONB) + one column per Well-scope
-  Parameter (62 currently).
+  Parameter (59 currently).
 - `completion_interval` -- `id`, `well_id` (FK, `ON DELETE CASCADE`), `ordinal`
   (1-based submission order, **not** used for referential integrity), timestamps + the
-  ~49 Completion-Interval-scope columns (47 rows; 1 multi-number row expands into 3
+  ~67 Completion-Interval-scope columns (62 rows; 1 multi-number row expands into 6
   columns). `UNIQUE(well_id, ordinal)`.
-- `sand_body` -- same pattern, FK to `completion_interval.id`, + the ~33 Sand-Body-scope
-  columns (29 rows; 1 multi-number row expands into 5 columns). `UNIQUE(completion_interval_id,
+- `sand_body` -- same pattern, FK to `completion_interval.id`, + the ~34 Sand-Body-scope
+  columns (29 rows; 1 multi-number row expands into 6 columns). `UNIQUE(completion_interval_id,
   ordinal)`.
 
 Design decisions worth knowing before touching this:
@@ -284,7 +289,7 @@ a real query), `POST /records` (submit -- one transaction: well -> its completio
 intervals -> their sand bodies), `GET /records/{id}` (fetch, org-scoped). The
 ingest payload's shape is the same nested `Category -> Subcategory -> Parameter ->
 value` structure the form's own JSON export produces, modeled as generic nested dicts
-in `backend/app/schemas/ingest.py` rather than ~145 named fields, validated by
+in `backend/app/schemas/ingest.py` rather than ~150 named fields, validated by
 `db/mapping.py`.
 
 ### Local reproducibility

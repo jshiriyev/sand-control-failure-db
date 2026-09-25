@@ -9,7 +9,7 @@ knows what a valid bucket looks like (see schemas/validation.py).
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
@@ -47,6 +47,7 @@ class CompletionIntervalIngest(BaseModel):
 
 class RecordIngest(BaseModel):
     generated_at: datetime | None = None
+    record_status: Literal["draft", "complete"] | None = None
     well: Bucket = Field(default_factory=dict)
     completion_intervals: list[CompletionIntervalIngest] = Field(min_length=1)
     comments: RecordComments | None = None
@@ -58,6 +59,12 @@ class RecordIngest(BaseModel):
 
     @model_validator(mode="after")
     def _validate_comment_layout(self) -> "RecordIngest":
+        # The static form saves incomplete files locally, but this endpoint
+        # creates submitted records. An explicit draft marker is therefore a
+        # useful final guard even when a particular draft happens to contain
+        # enough required values to pass field validation.
+        if self.record_status == "draft":
+            raise ValueError("Draft files cannot be submitted as completed records")
         if self.comments is None:
             return self
         if len(self.comments.completion_intervals) != len(self.completion_intervals):

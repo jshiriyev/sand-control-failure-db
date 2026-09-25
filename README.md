@@ -11,7 +11,9 @@ web form  -->  FastAPI backend  -->  PostgreSQL
 
 The standalone form can save incomplete drafts as JSON or CSV and import
 either format later. Both files preserve entered values, comments, and the
-Completion Interval / Sand Body layout; final exports still validate the form.
+Completion Interval / Sand Body layout. Draft filenames end in _draft; validated
+exports end in _complete. The same status is recorded inside each file, and the
+API rejects files explicitly marked as drafts.
 
 This repository is the durable source of truth for the whole system --
 schema, migrations, backend, form, tests, and configuration. It does **not**
