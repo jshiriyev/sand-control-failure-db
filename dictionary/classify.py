@@ -27,12 +27,31 @@ def _resolve_pattern(token: str | None) -> str | None:
     return NAMED_PATTERNS.get(token, token)
 
 
+def _conditional_options(spec: dict) -> tuple[list[str], dict[str, dict[str, list[str]]]]:
+    options_by = spec.get("options_by") or {}
+    if not options_by:
+        return [], {}
+    if not isinstance(options_by, dict) or len(options_by) != 1:
+        raise ValueError("options_by must name exactly one controlling parameter")
+    trigger, values = next(iter(options_by.items()))
+    if not isinstance(trigger, str) or not isinstance(values, dict) or not values:
+        raise ValueError("options_by must map a parameter to its answer choices")
+    options = []
+    for choices in values.values():
+        if not isinstance(choices, list) or not choices or not all(isinstance(choice, str) for choice in choices):
+            raise ValueError("Every options_by answer must have a nonempty string option list")
+        options.extend(choices)
+    return list(dict.fromkeys(options)), options_by
+
+
 def classify_field(row: ParamRow) -> FieldSpec:
     it = row.input_type
     if it == "Dropdown Menu":
         spec = parse_validation_cell(row.data_validation)
         required = bool(spec.get("required")) if isinstance(spec, dict) else False
-        return FieldSpec(kind="select", options=parse_dropdown_options(row.data_validation), required=required)
+        conditional, options_by = _conditional_options(spec) if isinstance(spec, dict) else ([], {})
+        options = conditional or parse_dropdown_options(row.data_validation)
+        return FieldSpec(kind="select", options=options, options_by=options_by, required=required)
     if it == "Boolean":
         spec = parse_validation_cell(row.data_validation)
         required = bool(spec.get("required")) if isinstance(spec, dict) else False

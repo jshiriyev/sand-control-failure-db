@@ -20,7 +20,7 @@ architecture" below).
 ## File inventory
 
 - `MASTER.xlsx` -- **the source of truth**. Sheet `MasterView`, one row per Parameter
-  (150 currently). Shared input to both `form/generate_form.py` and `db/codegen.py` via
+  (149 currently). Shared input to both `form/generate_form.py` and `db/codegen.py` via
   the `dictionary` package -- nothing else reads it directly.
 - `dictionary/` -- the shared parser for `MASTER.xlsx`. Owns the data model (`ParamRow`,
   `FieldSpec`), the cell-DSL parsers, and `classify_field()`. Both `form/` and `db/`
@@ -33,8 +33,8 @@ architecture" below).
 - `docs/generate_form_logic_tree.py` and `docs/form_logic_tree_template.html` --
   generate a read-only, standalone logic explorer from the same workbook and
   form visibility model; `docs/form_logic_tree.html` is the generated output.
-  The explorer shows the current rules and the existing browser/API requiredness
-  mismatch; it does not implement proposed form changes.
+  The explorer shows the current visibility rules and which required questions
+  apply to the selected answers.
 - `db/` -- SQLAlchemy schema, the dictionary-driven codegen pipeline, and Alembic
   migrations. See "Database & API architecture" below.
 - `backend/` -- the FastAPI app: org-token auth, submit/fetch endpoints.
@@ -72,7 +72,7 @@ Well  (rendered once per record)
       └── Sand Body {id}  (repeatable -- a completion interval has 1+ sand bodies)
 ```
 
-Current row distribution: Well=59, Completion Interval=62, Sand Body=29.
+Current row distribution: Well=58, Completion Interval=62, Sand Body=29.
 Drilling, Completion (incl. Sand Control equipment: Completion Type, Screen Type, Gravel
 Pack details, etc.) live at Completion Interval scope, meaning multiple Sand Bodies
 within one Completion Interval share a single drilling/completion/sand-control design
@@ -152,13 +152,20 @@ segment-recovery fallback described above. Zero cells fail outright.
 - At least one Completion Interval and, within it, at least one Sand Body are
   always present -- their "Remove" buttons refuse to delete the last remaining one
   and show an alert instead.
-- Every field gets a "?" tooltip icon (hover/focus) sourced from the `Tooltip` column,
-  and a red `*` marker for fields the dictionary marks `required`.
+- A field gets a "?" icon when the workbook supplies tooltip text, and a red
+  `*` marker when the dictionary marks it `required`.
 - Category names are never shown as headings inside Completion Interval/Sand Body
   blocks (only Subcategory headings) -- matches the original Main Sheet convention.
 - Conditional visibility (`data-show-if`/`data-hide-if`) is evaluated per block
   instance, scoped to that instance's own DOM subtree, so cloned blocks behave
   independently.
+- `Failure Confirmation` retains the required `Sand failure` Yes/No question. The
+  formerly separate failure and production history sections are now one always
+  visible `Sand Production & Well Performance` section. Shared questions appear
+  before a failure answer; Yes reveals only the extra failure questions. One
+  required `Severity of sand production` field is controlled by `Well type`,
+  independent of failure status. Oil and gas choices have different thresholds;
+  `Sand rate quantification = Measurable` still reveals its three rate fields.
 - **JSON and CSV files both round-trip the form state**, including field comments
   and the number/order of Completion Intervals and Sand Bodies. JSON keeps the
   original payload structure and adds a parallel comments tree. The backend
@@ -205,7 +212,7 @@ ownership:
   only credential stored; the plaintext token is shown once, at creation time.
 - `well` -- structural/audit columns (`id`, `organization_id`, `created_at`,
   `updated_at`, `submitted_at`, `raw_payload` JSONB) + one column per Well-scope
-  Parameter (59 currently).
+  Parameter (58 currently), plus `schema_version` (currently 0).
 - `completion_interval` -- `id`, `well_id` (FK, `ON DELETE CASCADE`), `ordinal`
   (1-based submission order, **not** used for referential integrity), timestamps + the
   ~67 Completion-Interval-scope columns (62 rows; 1 multi-number row expands into 6
@@ -244,17 +251,20 @@ committed, generated-not-hand-edited output:
   `db/models/*.py` via SQLAlchemy's imperative-`Table` + declarative-class pattern.
 - `db/generated/field_registry.json` -- one entry per dictionary row (keyed
   `"scope::category::subcategory::parameter"`), recording its DB column(s), kind,
-  options, min/max/step, and required flag. This is what `db/mapping.py` reads at
+  options, type-dependent options, min/max/step, required flag, and the
+  inverted visibility rules shared with the form. This is what `db/mapping.py` reads at
   runtime to validate and flatten/unflatten API payloads (`flatten_bucket` /
   `build_record_out`) -- the same function both the Pydantic validators and the
-  persistence service call, so there's exactly one place that knows what a submitted
-  "bucket" means.
+  persistence service call. Required fields are enforced only when visible; values
+  for hidden fields are rejected. The browser and API therefore evaluate the same
+  workbook rule tree.
 
 **Workflow after editing `MASTER.xlsx`**: `python -m db.codegen` -->
-`python form/generate_form.py` --> `cd db && alembic revision --autogenerate -m "..."`
+`python form/generate_form.py` --> `python docs/generate_form_logic_tree.py` -->
+`cd db && alembic revision --autogenerate -m "..."`
 (hand-review; autogenerate can't detect a rename, only a drop+add) --> `alembic upgrade
 head` --> run tests --> commit the `MASTER.xlsx` diff + regenerated files + migration
-together. CI re-runs the two regeneration commands and fails the build on any diff in
+together. CI re-runs the regeneration commands and fails the build on any diff in
 the committed generated files (the "codegen drift check").
 
 The initial migration (`db/migrations/versions/..._initial_schema.py`) and the second
@@ -295,7 +305,11 @@ intervals -> their sand bodies), `GET /records/{id}` (fetch, org-scoped). The
 ingest payload's shape is the same nested `Category -> Subcategory -> Parameter ->
 value` structure the form's own JSON export produces, modeled as generic nested dicts
 in `backend/app/schemas/ingest.py` rather than ~150 named fields, validated by
-`db/mapping.py`.
+`db/mapping.py`. JSON and CSV exports both include an explicit schema version.
+The API requires version 0 and persists it in `well.schema_version`; the current
+development schema may change without bumping version 0 until company data is
+received. At that point, freeze a stable version and add explicit compatibility
+paths for later schemas. There are no company records or legacy parsers yet.
 
 ### Local reproducibility
 

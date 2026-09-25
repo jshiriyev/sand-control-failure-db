@@ -95,6 +95,10 @@ def _single_spec(parsed) -> dict | None:
             # -- options live alongside other modifiers so a List/Boolean cell
             # can carry "required" (or any future modifier) too.
             spec["options"] = body.get("options")
+        if "options_by" in body:
+            # A single parameter can present a different list for each value
+            # of another parameter (e.g. oil/gas severity thresholds).
+            spec["options_by"] = body["options_by"]
         spec["min"] = body.get("min")
         spec["max"] = body.get("max")
         spec["required"] = bool(body.get("required"))

@@ -89,18 +89,21 @@ def client(db_session):
 
 @pytest.fixture()
 def make_payload():
-    """Factory for a minimal ``POST /records`` payload that satisfies every
-    currently-required field, built from ``db/generated/field_registry.json``
-    so it stays correct as the dictionary's required set changes (only the
-    ``well`` scope has required fields today; the loop covers the others for
-    free if that changes). Tests mutate the returned dict to exercise a
-    specific validation path.
-    """
-    from db.mapping import _REGISTRY
+    """Build a browser-valid API record for a chosen visibility branch.
 
-    def _sample(entry: dict):
+    The registry decides which required fields apply after the controlling
+    answers are set. This covers Onshore, No failure, and type-specific sand
+    severity without copying those rules into the fixture.
+    """
+    from db.mapping import _BY_SCOPE, _applicable
+    from dictionary import CURRENT_SCHEMA_VERSION
+
+    def _sample(entry: dict, active_values: dict):
         kind = entry["kind"]
         if kind == "select":
+            if entry.get("options_by"):
+                trigger, choices = next(iter(entry["options_by"].items()))
+                return choices[active_values[trigger]][0]
             return entry["options"][0]
         if kind == "date":
             return "2020-01-01"
@@ -112,15 +115,28 @@ def make_payload():
             return "A" * max(entry["min_length"] or 1, 8)
         return "sample text"
 
-    def _factory() -> dict:
-        buckets: dict[str, dict] = {}
-        for entry in _REGISTRY.values():
-            if not entry.get("required"):
-                continue
-            bucket = buckets.setdefault(entry["scope"], {})
-            (bucket.setdefault(entry["category"], {})
-                   .setdefault(entry["subcategory"], {})[entry["parameter"]]) = _sample(entry)
+    def _factory(sand_failure: str = "No", well_type: str = "Oil Producer",
+                 environment: str = "Onshore") -> dict:
+        buckets: dict[str, dict] = {scope: {} for scope in _BY_SCOPE}
+        controls = {
+            "Sand failure": sand_failure,
+            "Well type": well_type,
+            "Operating environment": environment,
+        }
+        for scope, index in _BY_SCOPE.items():
+            bucket = buckets[scope]
+            for entry in sorted(index.values(), key=lambda item: item["row_number"]):
+                visible, active_values = _applicable(index, bucket)
+                key = f"{entry['category']}::{entry['subcategory']}::{entry['parameter']}"
+                if not visible[key] or not entry["required"]:
+                    continue
+                value = controls.get(entry["parameter"])
+                if value is None:
+                    value = _sample(entry, active_values)
+                (bucket.setdefault(entry["category"], {})
+                       .setdefault(entry["subcategory"], {})[entry["parameter"]]) = value
         return {
+            "schema_version": CURRENT_SCHEMA_VERSION,
             "well": buckets.get("well", {}),
             "completion_intervals": [
                 {"fields": buckets.get("completion_interval", {}),

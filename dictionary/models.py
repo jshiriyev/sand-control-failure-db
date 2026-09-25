@@ -28,6 +28,7 @@ class ParamRow:
 class FieldSpec:
     kind: str  # select | text | number | date | multi_number
     options: list[str] = field(default_factory=list)
+    options_by: dict[str, dict[str, list[str]]] = field(default_factory=dict)
     min_value: float | None = None
     max_value: float | None = None
     step: float | None = None

@@ -14,6 +14,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 from backend.app.schemas.validation import validate_bucket
+from dictionary import CURRENT_SCHEMA_VERSION
 
 Bucket = dict[str, dict[str, dict[str, Any]]]
 CommentBucket = dict[str, dict[str, dict[str, str]]]
@@ -46,11 +47,19 @@ class CompletionIntervalIngest(BaseModel):
 
 
 class RecordIngest(BaseModel):
+    schema_version: int = Field(strict=True)
     generated_at: datetime | None = None
     record_status: Literal["draft", "complete"] | None = None
     well: Bucket = Field(default_factory=dict)
     completion_intervals: list[CompletionIntervalIngest] = Field(min_length=1)
     comments: RecordComments | None = None
+
+    @field_validator("schema_version")
+    @classmethod
+    def _supported_schema_version(cls, value: int) -> int:
+        if value != CURRENT_SCHEMA_VERSION:
+            raise ValueError(f"Unsupported schema version {value}; expected {CURRENT_SCHEMA_VERSION}")
+        return value
 
     @field_validator("well")
     @classmethod

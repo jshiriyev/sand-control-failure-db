@@ -28,6 +28,7 @@ class RecordOut(BaseModel):
     organization_id: int
     created_at: datetime
     submitted_at: datetime | None
+    schema_version: int
     record_status: Literal["draft", "complete"] | None = None
     comments: dict[str, Any] | None = None
     well: Bucket

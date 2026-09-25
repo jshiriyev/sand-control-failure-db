@@ -25,15 +25,19 @@ from dictionary.parsing import (
     parse_validation_cell,
     safe_literal,
 )
+from dictionary.schema_version import CURRENT_SCHEMA_VERSION
+from dictionary.visibility import build_visibility_rules, target_rules
 
 __all__ = [
     "COMPLETION_SCOPE",
+    "CURRENT_SCHEMA_VERSION",
     "MULTI_LABEL_SUFFIX_RE",
     "SAND_BODY_SCOPE",
     "SHEET_NAME",
     "WELL_SCOPE",
     "FieldSpec",
     "ParamRow",
+    "build_visibility_rules",
     "classify_field",
     "group_by_category_subcategory",
     "load_dictionary",
@@ -42,4 +46,5 @@ __all__ = [
     "parse_multi_number",
     "parse_validation_cell",
     "safe_literal",
+    "target_rules",
 ]

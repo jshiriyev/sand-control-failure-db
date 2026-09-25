@@ -69,7 +69,6 @@ button { cursor: pointer; }
 .badge.shown { background: var(--show-bg); color: var(--show); }
 .badge.hidden { background: var(--hide-bg); color: var(--hide); }
 .badge.required { background: #edf1ff; color: #32477e; }
-.badge.api { background: var(--warn-bg); color: var(--warn); }
 .detail-empty { color: var(--muted); }
 .detail-grid { display: grid; grid-template-columns: max-content 1fr; gap: .35rem .65rem; font-size: .88rem; }
 .detail-grid dt { font-weight: 650; }
@@ -286,7 +285,7 @@ button { cursor: pointer; }
           const sectionBranch = addBranch(categoryBranch, section.name, sectionKey,
             countVisible(section.fields, scopeKey),
             filtering || (prior.get(sectionKey) ??
-              ['Failure Confirmation', 'Failure Details & Performance Impact', 'Production Performance History'].includes(section.name)));
+              ['Failure Confirmation', 'Sand Production & Well Performance'].includes(section.name)));
           const list = el('ul', 'field-list');
           for (const field of sectionEntry.fields) {
             const fieldKey = key(scopeKey, field);
@@ -304,7 +303,6 @@ button { cursor: pointer; }
             button.appendChild(badge(status[fieldKey].visible ? 'Visible' : 'Hidden',
               status[fieldKey].visible ? 'shown' : 'hidden'));
             if (field.required) button.appendChild(badge('Required', 'required'));
-            if (field.required && !status[fieldKey].visible) button.appendChild(badge('API mismatch', 'api'));
             button.addEventListener('click', function () {
               selectedKey = fieldKey;
               treeRoot.querySelectorAll('.field-button.selected').forEach(node => node.classList.remove('selected'));
@@ -328,7 +326,7 @@ button { cursor: pointer; }
       el('span', '', String(all.length) + ' questions'),
       el('span', '', String(visible) + ' visible'),
       el('span', '', String(all.length - visible) + ' hidden'),
-      el('span', 'warning', String(hiddenRequired) + ' hidden but required by current API')
+      el('span', 'warning', String(hiddenRequired) + ' required questions hidden in this scenario')
     ];
     countsRoot.replaceChildren(...counts);
   }
@@ -359,8 +357,14 @@ button { cursor: pointer; }
     ].filter(text => text !== 'None').join('; ') || 'No additional condition');
     addDetailPair(list, 'Browser', field.required ?
       'Required when visible; hidden controls are disabled.' : 'Optional.');
-    addDetailPair(list, 'Current API', field.required ?
-      'Required in every submitted record, even when hidden in the form.' : 'Optional.');
+    addDetailPair(list, 'API', field.required ?
+      'Required when visible; hidden answers are rejected.' : 'Optional; hidden answers are rejected.');
+    if (field.options_by) {
+      const [trigger, groups] = Object.entries(field.options_by)[0];
+      const selected = state[item.scope.key][trigger] || '';
+      addDetailPair(list, 'Choices', selected ?
+        (groups[selected] || []).join('; ') : 'Choose ' + trigger + ' to see the choices.');
+    }
     addDetailPair(list, 'JSON path',
       (item.scope.key === 'well' ? 'well' : item.scope.key === 'completion_interval' ?
         'completion_intervals[0].fields' : 'completion_intervals[0].sand_bodies[0]') +

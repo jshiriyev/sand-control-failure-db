@@ -29,6 +29,11 @@ def test_fetch_round_trips_submitted_data(client, seeded_org, make_payload):
     fetch_resp = client.get(f"/records/{record_id}", headers=_auth(token))
     assert fetch_resp.status_code == 200
     body = fetch_resp.json()
+    assert body["schema_version"] == payload["schema_version"]
+    assert (body["well"]["Well Specific"]["Sand Production & Well Performance"]
+            ["Severity of sand production"] ==
+            payload["well"]["Well Specific"]["Sand Production & Well Performance"]
+            ["Severity of sand production"])
     ident = body["well"]["Well Specific"]["Well & Field Identification"]
     assert ident["Well name (anonymized)"] == "FETCHTEST"
     assert len(body["completion_intervals"]) == 1

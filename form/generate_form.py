@@ -42,7 +42,6 @@ import argparse
 import html
 import json
 import sys
-from collections import defaultdict
 from datetime import date
 from pathlib import Path
 
@@ -54,14 +53,15 @@ if str(REPO_ROOT) not in sys.path:
 
 from dictionary import (  # noqa: E402
     COMPLETION_SCOPE,
+    CURRENT_SCHEMA_VERSION,
     SAND_BODY_SCOPE,
     WELL_SCOPE,
     FieldSpec,
     ParamRow,
+    build_visibility_rules,
     classify_field,
     group_by_category_subcategory,
     load_dictionary,
-    parse_affected_cell,
 )
 
 DEFAULT_INPUT = REPO_ROOT / "MASTER.xlsx"
@@ -115,27 +115,11 @@ def build_model(rows: list[ParamRow]) -> dict:
     completion_rows = [r for r in rows if r.scope == COMPLETION_SCOPE]
     sand_body_rows = [r for r in rows if r.scope == SAND_BODY_SCOPE]
 
-    subcat_show: dict[tuple[str, str], list[tuple[str, str]]] = defaultdict(list)
-    subcat_hide: dict[tuple[str, str], list[tuple[str, str]]] = defaultdict(list)
-    param_show: dict[tuple[str, str], list[tuple[str, str]]] = defaultdict(list)
-    param_hide: dict[tuple[str, str], list[tuple[str, str]]] = defaultdict(list)
-
-    for r in rows:
-        for trigger_value, target, exclude in parse_affected_cell(r.affected_subcategory):
-            bucket = subcat_hide if exclude else subcat_show
-            bucket[(r.category, target)].append((r.parameter, trigger_value))
-        for trigger_value, target, exclude in parse_affected_cell(r.affected_parameter):
-            bucket = param_hide if exclude else param_show
-            bucket[(r.category, target)].append((r.parameter, trigger_value))
-
     return {
         "well": group_by_category_subcategory(well_rows),
         "completion": group_by_category_subcategory(completion_rows),
         "sand_body": group_by_category_subcategory(sand_body_rows),
-        "subcat_show": subcat_show,
-        "subcat_hide": subcat_hide,
-        "param_show": param_show,
-        "param_hide": param_hide,
+        **build_visibility_rules(rows),
     }
 
 
@@ -180,8 +164,14 @@ def render_control(row: ParamRow, spec: FieldSpec) -> str:
         # placeholder also says that leaving the field blank is a real answer here.
         blank_label = "Select..." if spec.required else "(Blank)"
         options = [f'<option value="" selected>{blank_label}</option>']
-        options += [f'<option value="{esc(o)}">{esc(o)}</option>' for o in spec.options]
-        return f'<select data-param="{dp}" data-kind="select"{req_attr}>{"".join(options)}</select>'
+        if spec.options_by:
+            # The workbook holds the choices for each Well type. JavaScript
+            # supplies the relevant list after the controlling answer changes.
+            conditional = f' data-options-by="{esc(json.dumps(spec.options_by))}"'
+        else:
+            conditional = ""
+            options += [f'<option value="{esc(o)}">{esc(o)}</option>' for o in spec.options]
+        return f'<select data-param="{dp}" data-kind="select"{conditional}{req_attr}>{"".join(options)}</select>'
     if spec.kind == "number":
         attrs = ""
         if spec.min_value is not None:
@@ -412,6 +402,7 @@ input.mn-input { padding: .35rem .25rem; text-align: center; }
 
 JS = """
 (function () {
+  const SCHEMA_VERSION = __SCHEMA_VERSION__;
   const MAX_COMPLETION = __MAX_COMPLETION__;
   const MAX_SAND_BODY = __MAX_SAND_BODY__;
   const EXPIRES_ON = __EXPIRES_ON__;
@@ -450,6 +441,20 @@ JS = """
       return trigger && getControlValue(trigger) === value;
     });
   }
+  function refreshConditionalOptions(root) {
+    root.querySelectorAll('select[data-options-by]').forEach((control) => {
+      const config = JSON.parse(control.dataset.optionsBy);
+      const [triggerName, byValue] = Object.entries(config)[0];
+      const trigger = findParamField(root, triggerName);
+      const choices = byValue[trigger ? getControlValue(trigger) : ''] || [];
+      const current = control.value;
+      const existing = Array.from(control.options).slice(1).map((option) => option.value);
+      if (JSON.stringify(existing) === JSON.stringify(choices)) return;
+      const blank = new Option(control.required ? 'Select...' : '(Blank)', '');
+      control.replaceChildren(blank, ...choices.map((choice) => new Option(choice, choice)));
+      control.value = choices.includes(current) ? current : '';
+    });
+  }
   function clearControl(control) {
     if (control.dataset.kind === 'multi_number') {
       control.querySelectorAll('input').forEach((i) => { i.value = ''; });
@@ -466,18 +471,17 @@ JS = """
   }
   // Hiding a control with CSS does NOT exempt it from constraint validation --
   // only `disabled` does. Without this, a required field the user can't even see
-  // (row 017/018 "Severity of sand production - Oil/Gas Well" are mutually
-  // exclusive, so one of the two is always hidden) keeps failing
-  // reportValidity() forever, and because the browser can't focus an unrendered
-  // control to show its message, both exports just die silently. So the same
+  // (for example, the required offshore Water depth field on an Onshore
+  // record) keeps failing reportValidity() forever. Because the browser can't
+  // focus an unrendered control to show its message, exports die silently.
+  // So the same
   // pass that hides a field also disables its controls, and re-enables them
   // when the field comes back.
   //
   // Hidden-ness must be read from the whole ancestor chain rather than the
   // element's own style: a field row can have its own satisfied show-if rule
-  // (017 is shown by "Well type=Oil Producer") while the subcategory around it
-  // is hidden by an unrelated one ("Sand failure=Yes"), which leaves the row
-  // display:'' yet still unreachable.
+  // while the parent section is hidden by an unrelated answer. In that case
+  // the row still has display:'' but remains unreachable.
   function isRuleHidden(el) {
     for (let node = el; node; node = node.parentElement) {
       if (node.style && node.style.display === 'none') return true;
@@ -493,6 +497,7 @@ JS = """
     });
   }
   function evaluateVisibility(root) {
+    refreshConditionalOptions(root);
     root.querySelectorAll('[data-show-if], [data-hide-if]').forEach((el) => {
       let visible = true;
       const showExpr = el.getAttribute('data-show-if');
@@ -640,6 +645,15 @@ JS = """
     return bucket?.[category]?.[subcategory]?.[parameter] ?? null;
   }
 
+  function findBucketParamValue(bucket, parameter) {
+    for (const subcategories of Object.values(bucket || {})) {
+      for (const parameters of Object.values(subcategories)) {
+        if (Object.hasOwn(parameters, parameter)) return parameters[parameter];
+      }
+    }
+    return null;
+  }
+
   function collectBucket(root) {
     const bucket = {};
     walkFields(root, true, (sub, fr) => {
@@ -675,7 +689,8 @@ JS = """
       completion_intervals.push({ fields, sand_bodies });
       comments.completion_intervals.push({ fields: fieldComments, sand_bodies: sandComments });
     });
-    return { generated_at: new Date().toISOString(), well, completion_intervals, comments };
+    return { schema_version: SCHEMA_VERSION, generated_at: new Date().toISOString(),
+      well, completion_intervals, comments };
   }
 
   // Keep the familiar long CSV layout. The final Row Type column adds
@@ -685,6 +700,7 @@ JS = """
 
   function collectCsvRows(record) {
     const rows = [
+      ['', '', 'schema_version', '', '', record.schema_version, '', '', 'metadata'],
       ['', '', 'generated_at', '', '', record.generated_at, '', '', 'metadata'],
       ['', '', 'record_status', '', '', record.record_status, '', '', 'metadata'],
     ];
@@ -752,7 +768,8 @@ JS = """
     if (!rows.length || rows[0].join('\\0') !== CSV_HEADER.join('\\0')) {
       throw new Error('CSV columns do not match this form.');
     }
-    const record = { generated_at: null, record_status: null, well: {}, completion_intervals: [],
+    const record = { schema_version: null, generated_at: null, record_status: null,
+      well: {}, completion_intervals: [],
       comments: { well: {}, completion_intervals: [] } };
 
     function requiredIndex(value, maximum, label) {
@@ -781,7 +798,11 @@ JS = """
       if (row.length !== CSV_HEADER.length) throw new Error('CSV row has the wrong number of columns.');
       const [category, subcategory, parameter, compRaw, sandRaw, value, unit, comment, type] = row;
       if (type === 'metadata') {
-        if (parameter === 'generated_at') record.generated_at = value;
+        if (parameter === 'schema_version') {
+          if (!/^(0|[1-9]\\d*)$/.test(value)) throw new Error('Invalid schema version in CSV.');
+          record.schema_version = Number(value);
+        }
+        else if (parameter === 'generated_at') record.generated_at = value;
         else if (parameter === 'record_status') record.record_status = value;
         else throw new Error('Unknown CSV metadata: ' + parameter);
         continue;
@@ -857,9 +878,14 @@ JS = """
             }
           } else if (typeof value !== 'string' && typeof value !== 'number') {
             throw new Error('Invalid field value: ' + parameter);
-          } else if (control.tagName === 'SELECT' &&
-                     !Array.from(control.options).some((option) => option.value === String(value))) {
-            throw new Error('Unknown option for ' + parameter + '.');
+          } else if (control.tagName === 'SELECT') {
+            let options = Array.from(control.options).map((option) => option.value);
+            if (control.dataset.optionsBy) {
+              const config = JSON.parse(control.dataset.optionsBy);
+              const [triggerName, byValue] = Object.entries(config)[0];
+              options = byValue[findBucketParamValue(bucket, triggerName)] || [];
+            }
+            if (!options.includes(String(value))) throw new Error('Unknown option for ' + parameter + '.');
           }
         }
       }
@@ -867,8 +893,11 @@ JS = """
   }
 
   function validateImport(record) {
-    if (!isObject(record) || (record.record_status != null &&
-        record.record_status !== 'draft' && record.record_status !== 'complete')) {
+    if (!isObject(record) || record.schema_version !== SCHEMA_VERSION) {
+      throw new Error('Unsupported or missing schema version. Expected ' + SCHEMA_VERSION + '.');
+    }
+    if (record.record_status != null &&
+        record.record_status !== 'draft' && record.record_status !== 'complete') {
       throw new Error('Unknown file status.');
     }
     if (!Array.isArray(record.completion_intervals) ||
@@ -907,6 +936,17 @@ JS = """
   }
 
   function fillBucket(root, bucket, commentsOnly) {
+    if (!commentsOnly) {
+      // Populate controlling answers before setting a dependent dropdown.
+      // Otherwise its saved option does not exist yet and the browser drops it.
+      root.querySelectorAll('select[data-options-by]').forEach((control) => {
+        const [triggerName] = Object.keys(JSON.parse(control.dataset.optionsBy));
+        const trigger = findParamField(root, triggerName);
+        const value = findBucketParamValue(bucket, triggerName);
+        if (trigger && value != null) trigger.value = value;
+      });
+      refreshConditionalOptions(root);
+    }
     for (const [category, subcategories] of Object.entries(bucket)) {
       for (const [subcategory, parameters] of Object.entries(subcategories)) {
         for (const [parameter, value] of Object.entries(parameters)) {
@@ -1054,7 +1094,8 @@ def render_html(model: dict, max_completion: int = DEFAULT_MAX_COMPLETION,
                  expires_on: str = DEFAULT_EXPIRES_ON) -> str:
     well_html = render_well_section(model)
     completion_template_html = render_completion_template(model)
-    js = (JS.replace("__MAX_COMPLETION__", str(max_completion))
+    js = (JS.replace("__SCHEMA_VERSION__", str(CURRENT_SCHEMA_VERSION))
+            .replace("__MAX_COMPLETION__", str(max_completion))
             .replace("__MAX_SAND_BODY__", str(max_sand_bodies))
             .replace("__EXPIRES_ON__", json.dumps(expires_on) if expires_on else "null")
             .replace("__EXPORT_NAME_PARAMS__", json.dumps(list(EXPORT_NAME_PARAMS))))

@@ -19,6 +19,7 @@ def create_record(db: Session, org: Organization, payload: RecordIngest) -> Well
     """
     well = Well(
         organization_id=org.id,
+        schema_version=payload.schema_version,
         submitted_at=payload.generated_at,
         raw_payload=payload.model_dump(mode="json"),
         **flatten_bucket(payload.well, scope="well"),
@@ -52,7 +53,10 @@ def get_well_owned_by(db: Session, record_id: int, organization_id: int) -> Well
     return db.query(Well).filter_by(id=record_id, organization_id=organization_id).first()
 
 
-_WELL_STRUCTURAL_COLUMNS = {"id", "organization_id", "created_at", "updated_at", "submitted_at", "raw_payload"}
+_WELL_STRUCTURAL_COLUMNS = {
+    "id", "organization_id", "created_at", "updated_at", "submitted_at",
+    "schema_version", "raw_payload",
+}
 _COMPLETION_STRUCTURAL_COLUMNS = {"id", "well_id", "ordinal", "created_at", "updated_at"}
 _SAND_BODY_STRUCTURAL_COLUMNS = {"id", "completion_interval_id", "ordinal", "created_at", "updated_at"}
 
@@ -87,6 +91,7 @@ def build_record_response(well: Well) -> RecordOut:
         organization_id=well.organization_id,
         created_at=well.created_at,
         submitted_at=well.submitted_at,
+        schema_version=well.schema_version,
         record_status=(well.raw_payload or {}).get("record_status"),
         comments=(well.raw_payload or {}).get("comments"),
         well=build_record_out(_row_columns(well, _WELL_STRUCTURAL_COLUMNS), scope="well"),

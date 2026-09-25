@@ -13,7 +13,11 @@ The standalone form can save incomplete drafts as JSON or CSV and import
 either format later. Both files preserve entered values, comments, and the
 Completion Interval / Sand Body layout. Draft filenames end in _draft; validated
 exports end in _complete. The same status is recorded inside each file, and the
-API rejects files explicitly marked as drafts.
+API rejects files explicitly marked as drafts. Both file formats carry
+`schema_version: 0` while the schema is in development. The API requires that
+version and stores it with submitted records. Version 0 may evolve without a
+version bump until company submissions begin; after that point, freeze a first
+stable version and add explicit compatibility handling for later changes.
 
 This repository is the durable source of truth for the whole system --
 schema, migrations, backend, form, tests, and configuration. It does **not**
@@ -42,7 +46,8 @@ Open [the interactive logic tree](docs/form_logic_tree.html) in a browser to
 inspect the current workbook hierarchy and conditional visibility. Choose
 Well type, Sand failure, Sand rate quantification, and other controlling
 answers to see which rows appear. Hidden rows stay listed, and the tree
-flags fields that the current API requires even when the browser hides them.
+shows which required fields are exempt while hidden. The API uses the same
+visibility rules and rejects answers to hidden questions.
 This is a read-only explanation tool; it does not enter or submit well data.
 
 Regenerate it after changing the workbook:
@@ -71,17 +76,14 @@ curl http://localhost:8000/health
 curl http://localhost:8000/docs          # interactive OpenAPI docs
 ```
 
-Submit a record (replace `<token>` with a token from the backend logs):
+Submit a completed file exported by the form (replace `<token>` and the file
+path). The payload must include `schema_version` and all fields required by
+the selected answers; an incomplete draft cannot be submitted:
 
 ```
 curl -X POST http://localhost:8000/records \
   -H "Authorization: Bearer <token>" -H "Content-Type: application/json" \
-  -d '{
-        "well": {"Well Specific": {"Well & Field Identification": {
-          "Well name": "TEST-1", "Well identification number": 1
-        }}},
-        "completion_intervals": [{"fields": {}, "sand_bodies": [{}]}]
-      }'
+  --data-binary @/path/to/record_complete.json
 ```
 
 ## Local development without Docker

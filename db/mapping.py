@@ -38,7 +38,8 @@ for _key, _entry in _REGISTRY.items():
     _BY_SCOPE.setdefault(_scope, {})[_rest] = _entry
 
 
-def _coerce(entry: dict, leaf_key: str, value: Any, errors: list[str]) -> dict[str, Any]:
+def _coerce(entry: dict, leaf_key: str, value: Any, errors: list[str],
+            active_values: dict[str, Any]) -> dict[str, Any]:
     """Coerces one leaf `value` per its registry entry; returns {db_column: value}
     (a multi_number field can populate more than one column)."""
     if value is None or value == "":
@@ -51,7 +52,10 @@ def _coerce(entry: dict, leaf_key: str, value: Any, errors: list[str]) -> dict[s
     if kind == "select":
         text_value = str(value)
         options = entry["options"]
-        if options and text_value not in options:
+        if entry.get("options_by"):
+            trigger, choices = next(iter(entry["options_by"].items()))
+            options = choices.get(str(active_values.get(trigger, "")), [])
+        if text_value not in options and (options or entry.get("options_by")):
             errors.append(f"{leaf_key}: {value!r} is not one of {options}")
             return {}
         if db_type == "Boolean":
@@ -117,13 +121,63 @@ def _to_number(value: Any, db_type: str) -> int | Decimal | None:
         return None
 
 
+def _matches(rules: list[dict[str, str]], values: dict[str, Any]) -> bool:
+    return any(str(values.get(rule["parameter"], "")) == rule["value"] for rule in rules)
+
+
+def _visible(entry: dict, values: dict[str, Any]) -> bool:
+    """Apply the same OR show/hide rules and parent-section gate as the form."""
+    rules = entry.get("visibility", {})
+    for prefix in ("subcategory_", ""):
+        show = rules.get(prefix + "show", [])
+        hide = rules.get(prefix + "hide", [])
+        if show and not _matches(show, values):
+            return False
+        if hide and _matches(hide, values):
+            return False
+    return True
+
+
+def _applicable(index: dict[str, dict], bucket: dict) -> tuple[dict[str, bool], dict[str, Any]]:
+    """Resolve hidden triggers before deciding which fields are required.
+
+    Form controls disappear and clear when their parent/own rule hides them.
+    The submitted bucket should follow the same behavior even if a caller
+    constructs JSON by hand. Current workbook triggers have unique names in
+    each scope, matching findParamField() in the browser.
+    """
+    entries = sorted(index.items(), key=lambda pair: pair[1]["row_number"])
+    provided = {
+        f"{category}::{subcategory}::{parameter}": value
+        for category, subcats in (bucket or {}).items()
+        for subcategory, params in (subcats or {}).items()
+        for parameter, value in (params or {}).items()
+    }
+    active_values = {}
+    for key, entry in entries:
+        value = provided.get(key)
+        if value is not None and value != "":
+            active_values.setdefault(entry["parameter"], value)
+    for _ in range(len(entries) + 1):
+        changed = False
+        for key, entry in entries:
+            if not _visible(entry, active_values) and entry["parameter"] in active_values:
+                del active_values[entry["parameter"]]
+                changed = True
+        if not changed:
+            break
+    return {key: _visible(entry, active_values) for key, entry in entries}, active_values
+
+
 def flatten_bucket(bucket: dict[str, dict[str, dict[str, Any]]], scope: str) -> dict[str, Any]:
-    """Category -> Subcategory -> Parameter -> value, validated against the
-    dictionary-derived registry for `scope`, flattened into {db_column: value}.
-    Raises MappingError (with every problem found, not just the first) if any
-    parameter is unrecognized or any value fails validation.
+    """Validate fields against the workbook registry and flatten DB values.
+
+    A required field only applies when the form would show it. Values sent
+    for hidden questions are rejected so hand-built API records cannot carry
+    answers that a browser export would have cleared and omitted.
     """
     index = _BY_SCOPE.get(scope, {})
+    visible, active_values = _applicable(index, bucket)
     flat: dict[str, Any] = {}
     errors: list[str] = []
     provided_keys: set[str] = set()
@@ -137,13 +191,16 @@ def flatten_bucket(bucket: dict[str, dict[str, dict[str, Any]]], scope: str) -> 
                 if entry is None:
                     errors.append(f"{leaf_key}: not a recognized field for this record level")
                     continue
-                coerced = _coerce(entry, leaf_key, value, errors)
+                if not visible[key]:
+                    errors.append(f"{leaf_key}: hidden by the current form answers")
+                    continue
+                coerced = _coerce(entry, leaf_key, value, errors, active_values)
                 if coerced:
                     provided_keys.add(key)
                 flat.update(coerced)
 
     for key, entry in index.items():
-        if entry.get("required") and key not in provided_keys:
+        if visible[key] and entry.get("required") and key not in provided_keys:
             errors.append(
                 f"{entry['category']} / {entry['subcategory']} / {entry['parameter']}: this field is required"
             )

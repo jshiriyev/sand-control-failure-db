@@ -26,8 +26,10 @@ from dictionary import (  # noqa: E402
     SAND_BODY_SCOPE,
     WELL_SCOPE,
     ParamRow,
+    build_visibility_rules,
     classify_field,
     load_dictionary,
+    target_rules,
 )
 from dictionary.models import FieldSpec  # noqa: E402
 
@@ -53,6 +55,7 @@ def _column_type_name(row: ParamRow, spec: FieldSpec) -> str:
 def generate() -> dict[str, list[tuple[str, str, str]]]:
     """Writes db/generated/* and returns {scope_key: [(col_name, type_name, source_parameter), ...]}."""
     rows = load_dictionary(MASTER_XLSX)
+    visibility = build_visibility_rules(rows)
     registry: dict[str, dict] = {}
     per_table_columns: dict[str, list[tuple[str, str, str]]] = {}
 
@@ -75,8 +78,9 @@ def generate() -> dict[str, list[tuple[str, str, str]]]:
             columns.extend((name, type_name, row.parameter) for name in col_names)
 
             registry_key = f"{scope_key}::{row.category}::{row.subcategory}::{row.parameter}"
-            registry[registry_key] = {
+            entry = {
                 "scope": scope_key,
+                "row_number": row.row_number,
                 "table": table_name,
                 "category": row.category,
                 "subcategory": row.subcategory,
@@ -94,6 +98,17 @@ def generate() -> dict[str, list[tuple[str, str, str]]]:
                 "pattern": spec.pattern,
                 "unit": row.unit,
             }
+            if spec.options_by:
+                entry["options_by"] = spec.options_by
+            conditions = {
+                "subcategory_show": target_rules(visibility["subcat_show"], row.category, row.subcategory),
+                "subcategory_hide": target_rules(visibility["subcat_hide"], row.category, row.subcategory),
+                "show": target_rules(visibility["param_show"], row.category, row.parameter),
+                "hide": target_rules(visibility["param_hide"], row.category, row.parameter),
+            }
+            if any(conditions.values()):
+                entry["visibility"] = conditions
+            registry[registry_key] = entry
 
         per_table_columns[scope_key] = columns
         _write_columns_module(module_name, table_name, columns)

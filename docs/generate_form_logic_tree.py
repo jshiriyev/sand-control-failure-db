@@ -55,6 +55,7 @@ def build_tree() -> dict:
                         "parameter": row.parameter,
                         "unit": row.unit,
                         "required": spec.required,
+                        "options_by": spec.options_by,
                         "show": rules(model["param_show"], category, row.parameter),
                         "hide": rules(model["param_hide"], category, row.parameter),
                     })
