@@ -17,8 +17,6 @@
   --show-bg: #e9f5ee;
   --hide: #7a5660;
   --hide-bg: #f4edef;
-  --warn: #855116;
-  --warn-bg: #fff3db;
 }
 * { box-sizing: border-box; }
 body { margin: 0; color: var(--ink); background: var(--canvas); font: 15px/1.48 system-ui, -apple-system, Segoe UI, sans-serif; }
@@ -48,11 +46,16 @@ button { cursor: pointer; }
 .counts { display: flex; flex-wrap: wrap; gap: .4rem; margin: .75rem 0; }
 .counts span, .badge { border-radius: 999px; padding: .16rem .55rem; font-size: .75rem; white-space: nowrap; }
 .counts span { background: #edf2f5; color: #27445a; }
-.counts .warning { color: var(--warn); background: var(--warn-bg); }
 .tools { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; margin: .8rem 0 1rem; }
 .tools input { flex: 1 1 220px; min-width: 0; padding: .45rem .6rem; border: 1px solid #aebdc8; border-radius: 5px; }
-.tools label { display: flex; gap: .3rem; align-items: center; font-size: .85rem; }
 .tools button { padding: .4rem .65rem; border: 1px solid #abc0cf; border-radius: 5px; color: var(--navy); background: #fff; }
+.badge-filters { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; }
+.badge-filters button { border-radius: 999px; padding: .28rem .65rem; font-size: .8rem; font-weight: 600; }
+.badge-filters button[aria-pressed="false"] { background: #fff; color: var(--muted); border-color: #aebdc8; text-decoration: line-through; }
+.badge-filters button:focus-visible { outline: 2px solid #246c98; outline-offset: 2px; }
+.badge-filters .shown[aria-pressed="true"] { background: var(--show-bg); color: var(--show); border-color: var(--show); }
+.badge-filters .required[aria-pressed="true"] { background: #edf1ff; color: #32477e; border-color: #32477e; }
+.badge-filters .hidden[aria-pressed="true"] { background: var(--hide-bg); color: var(--hide); border-color: var(--hide); }
 .tree details { margin: .38rem 0 .38rem .7rem; border-left: 2px solid var(--line); padding-left: .7rem; }
 .tree > details { margin-left: 0; border-left: 0; padding-left: 0; }
 .tree summary { cursor: pointer; font-weight: 600; padding: .26rem .1rem; }
@@ -101,10 +104,15 @@ button { cursor: pointer; }
     <div id="counts" class="counts" aria-live="polite"></div>
     <div class="tools">
       <input id="search" type="search" placeholder="Find row number or question" aria-label="Find row number or question">
-      <label><input id="hidden-only" type="checkbox"> Hidden rows only</label>
+      <div class="badge-filters" role="group" aria-label="Show questions with badges">
+        <button type="button" class="shown" data-filter="visible" aria-pressed="true" title="Show or hide visible questions">Visible</button>
+        <button type="button" class="required" data-filter="required" aria-pressed="true" title="Show or hide required questions">Required</button>
+        <button type="button" class="hidden" data-filter="hidden" aria-pressed="true" title="Show or hide hidden questions">Hidden</button>
+      </div>
       <button id="expand-all" type="button">Expand all</button>
       <button id="collapse-all" type="button">Collapse all</button>
     </div>
+    <p class="note">Badge filters change the tree display only. The Required count includes visible questions only.</p>
     <div id="tree" class="tree"></div>
   </section>
 </main>
@@ -121,7 +129,7 @@ button { cursor: pointer; }
   const countsRoot = document.getElementById('counts');
   const detailsRoot = document.getElementById('selected-details');
   const search = document.getElementById('search');
-  const hiddenOnly = document.getElementById('hidden-only');
+  const badgeFilters = { visible: true, required: true, hidden: true };
   let selectedKey = 'well:17';
   let status = {};
 
@@ -239,10 +247,14 @@ button { cursor: pointer; }
     parent.appendChild(branch);
     return branch;
   }
+  function matchesBadgeFilters(field, visible) {
+    if (!badgeFilters[visible ? 'visible' : 'hidden']) return false;
+    return !field.required || badgeFilters.required;
+  }
   function renderTree() {
     const prior = new Map(Array.from(treeRoot.querySelectorAll('details[data-tree-key]')).map(node => [node.dataset.treeKey, node.open]));
     treeRoot.replaceChildren();
-    const filtering = !!search.value.trim() || hiddenOnly.checked;
+    const filtering = !!search.value.trim() || Object.values(badgeFilters).some(enabled => !enabled);
     const scopeBranches = {};
     let matchCount = 0;
     for (const scope of scopes) {
@@ -254,7 +266,7 @@ button { cursor: pointer; }
             const query = search.value.trim().toLowerCase();
             const searched = !query || field.parameter.toLowerCase().includes(query) ||
               String(field.number).padStart(3, '0').includes(query);
-            return searched && (!hiddenOnly.checked || !status[key(scope.key, field)].visible);
+            return searched && matchesBadgeFilters(field, status[key(scope.key, field)].visible);
           });
           if (fields.length) {
             sections.push({section: section, fields: fields});
@@ -321,12 +333,12 @@ button { cursor: pointer; }
   function renderCounts() {
     const all = Object.values(status);
     const visible = all.filter(item => item.visible).length;
-    const hiddenRequired = all.filter(item => !item.visible && item.field.required).length;
+    const activeRequired = all.filter(item => item.visible && item.field.required).length;
     const counts = [
       el('span', '', String(all.length) + ' questions'),
       el('span', '', String(visible) + ' visible'),
       el('span', '', String(all.length - visible) + ' hidden'),
-      el('span', 'warning', String(hiddenRequired) + ' required questions hidden in this scenario')
+      el('span', '', String(activeRequired) + ' Required questions')
     ];
     countsRoot.replaceChildren(...counts);
   }
@@ -381,7 +393,14 @@ button { cursor: pointer; }
     renderDetails();
   }
   search.addEventListener('input', renderTree);
-  hiddenOnly.addEventListener('change', renderTree);
+  document.querySelectorAll('.badge-filters button').forEach(button => {
+    button.addEventListener('click', function () {
+      const filter = button.dataset.filter;
+      badgeFilters[filter] = !badgeFilters[filter];
+      button.setAttribute('aria-pressed', String(badgeFilters[filter]));
+      renderTree();
+    });
+  });
   document.getElementById('expand-all').addEventListener('click', function () {
     treeRoot.querySelectorAll('details').forEach(node => { node.open = true; });
   });
