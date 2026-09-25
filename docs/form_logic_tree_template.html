@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sand Control Form Logic Explorer</title>
+<style>
+:root {
+  color-scheme: light;
+  --ink: #162a3a;
+  --muted: #566a77;
+  --navy: #173b59;
+  --line: #d8e1e7;
+  --paper: #fff;
+  --canvas: #f3f7f9;
+  --show: #146545;
+  --show-bg: #e9f5ee;
+  --hide: #7a5660;
+  --hide-bg: #f4edef;
+  --warn: #855116;
+  --warn-bg: #fff3db;
+}
+* { box-sizing: border-box; }
+body { margin: 0; color: var(--ink); background: var(--canvas); font: 15px/1.48 system-ui, -apple-system, Segoe UI, sans-serif; }
+button, input, select { font: inherit; }
+button { cursor: pointer; }
+.page-head { padding: 1.3rem clamp(1rem, 4vw, 3rem); background: var(--navy); color: #fff; }
+.page-head h1 { margin: 0; font-size: clamp(1.35rem, 2.5vw, 2rem); }
+.page-head p { margin: .4rem 0 0; max-width: 75ch; color: #d7e8f2; }
+.banner { max-width: 1500px; margin: 1rem auto 0; padding: 0 clamp(1rem, 3vw, 2rem); }
+.banner p { margin: 0; padding: .75rem 1rem; background: #e4eef6; border-left: 4px solid #37749a; border-radius: 4px; }
+.layout { max-width: 1500px; padding: 1rem clamp(1rem, 3vw, 2rem) 2rem; margin: 0 auto; display: grid; grid-template-columns: minmax(260px, 330px) minmax(0, 1fr); gap: 1rem; align-items: start; }
+.sidebar { display: grid; gap: 1rem; position: sticky; top: 1rem; max-height: calc(100vh - 2rem); overflow: auto; }
+.panel, .tree-panel { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 2px 10px #173b590b; }
+.panel { padding: 1rem; }
+.panel h2, .tree-panel h2 { font-size: 1rem; margin: 0 0 .55rem; }
+.panel p { margin: .4rem 0 .75rem; color: var(--muted); font-size: .88rem; }
+.control-group { margin-top: .8rem; padding-top: .7rem; border-top: 1px solid var(--line); }
+.control-group h3 { margin: 0 0 .35rem; font-size: .86rem; color: var(--navy); }
+.control-line { display: block; margin: .55rem 0; }
+.control-line span { display: block; margin-bottom: .2rem; font-size: .85rem; }
+.control-line select, .control-line input { width: 100%; padding: .4rem .5rem; border: 1px solid #aebdc8; border-radius: 5px; background: #fff; }
+.control-line.is-hidden { opacity: .58; }
+.control-line small { display: block; color: var(--muted); }
+.tree-panel { min-width: 0; padding: 1rem; }
+.tree-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .8rem; align-items: center; }
+.tree-head h2 { margin: 0; }
+.counts { display: flex; flex-wrap: wrap; gap: .4rem; margin: .75rem 0; }
+.counts span, .badge { border-radius: 999px; padding: .16rem .55rem; font-size: .75rem; white-space: nowrap; }
+.counts span { background: #edf2f5; color: #27445a; }
+.counts .warning { color: var(--warn); background: var(--warn-bg); }
+.tools { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; margin: .8rem 0 1rem; }
+.tools input { flex: 1 1 220px; min-width: 0; padding: .45rem .6rem; border: 1px solid #aebdc8; border-radius: 5px; }
+.tools label { display: flex; gap: .3rem; align-items: center; font-size: .85rem; }
+.tools button { padding: .4rem .65rem; border: 1px solid #abc0cf; border-radius: 5px; color: var(--navy); background: #fff; }
+.tree details { margin: .38rem 0 .38rem .7rem; border-left: 2px solid var(--line); padding-left: .7rem; }
+.tree > details { margin-left: 0; border-left: 0; padding-left: 0; }
+.tree summary { cursor: pointer; font-weight: 600; padding: .26rem .1rem; }
+.tree summary small { font-weight: 400; color: var(--muted); }
+.field-list { list-style: none; padding: 0 0 0 .7rem; margin: .3rem 0 .7rem; display: grid; gap: .35rem; }
+.field-list li { min-width: 0; }
+.field-list button { width: 100%; border: 1px solid var(--line); border-radius: 6px; background: #fff; padding: .45rem .55rem; display: flex; flex-wrap: wrap; gap: .35rem .5rem; align-items: center; text-align: left; color: inherit; }
+.field-list button:hover, .field-list button:focus-visible { border-color: #3d7aa0; outline: none; box-shadow: 0 0 0 2px #d7e9f4; }
+.field-list button.selected { border-color: #246c98; box-shadow: 0 0 0 2px #d7e9f4; }
+.field-list button.is-hidden { background: #faf8f8; color: #7a6870; }
+.field-number { font-weight: 700; color: var(--navy); min-width: 2.1rem; }
+.is-hidden .field-number { color: #806a72; }
+.field-name { flex: 1 1 210px; overflow-wrap: anywhere; }
+.badge.shown { background: var(--show-bg); color: var(--show); }
+.badge.hidden { background: var(--hide-bg); color: var(--hide); }
+.badge.required { background: #edf1ff; color: #32477e; }
+.badge.api { background: var(--warn-bg); color: var(--warn); }
+.detail-empty { color: var(--muted); }
+.detail-grid { display: grid; grid-template-columns: max-content 1fr; gap: .35rem .65rem; font-size: .88rem; }
+.detail-grid dt { font-weight: 650; }
+.detail-grid dd { margin: 0; overflow-wrap: anywhere; }
+.detail-grid code { font-size: .83em; overflow-wrap: anywhere; }
+.note { font-size: .85rem; color: var(--muted); }
+@media (max-width: 900px) { .layout { grid-template-columns: 1fr; } .sidebar { position: static; max-height: none; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); } }
+</style>
+</head>
+<body>
+<header class="page-head">
+  <h1>Sand Control Form Logic Explorer</h1>
+  <p>Explore the current workbook structure and its visibility rules. This page shows one representative Completion Interval and Sand Body; the real form can repeat both.</p>
+</header>
+<div class="banner"><p><strong>Current form, read only.</strong> This explorer simulates the rules in MASTER.xlsx. It does not change the intake form or submit well data. Hidden rows stay in the tree so their conditions remain visible.</p></div>
+<main class="layout">
+  <aside class="sidebar">
+    <section class="panel">
+      <h2>Try the controlling answers</h2>
+      <p>Choose values here to see which questions appear. A control inside a hidden section clears, just as it does in the form.</p>
+      <div id="controls"></div>
+    </section>
+    <section class="panel" aria-live="polite">
+      <h2>Selected question</h2>
+      <div id="selected-details" class="detail-empty">Select a numbered question in the tree.</div>
+    </section>
+  </aside>
+  <section class="tree-panel">
+    <div class="tree-head"><h2>Scope → category → section → question</h2><span class="note">Source: MASTER.xlsx / MasterView</span></div>
+    <div id="counts" class="counts" aria-live="polite"></div>
+    <div class="tools">
+      <input id="search" type="search" placeholder="Find row number or question" aria-label="Find row number or question">
+      <label><input id="hidden-only" type="checkbox"> Hidden rows only</label>
+      <button id="expand-all" type="button">Expand all</button>
+      <button id="collapse-all" type="button">Collapse all</button>
+    </div>
+    <div id="tree" class="tree"></div>
+  </section>
+</main>
+<script type="application/json" id="tree-data">__TREE_DATA__</script>
+<script>
+(function () {
+  'use strict';
+  const model = JSON.parse(document.getElementById('tree-data').textContent);
+  const scopes = model.scopes;
+  const state = Object.fromEntries(scopes.map(scope => [scope.key, {}]));
+  const controlKeys = new Set(model.controls.map(control => control.scope + ':' + control.parameter));
+  const controlsRoot = document.getElementById('controls');
+  const treeRoot = document.getElementById('tree');
+  const countsRoot = document.getElementById('counts');
+  const detailsRoot = document.getElementById('selected-details');
+  const search = document.getElementById('search');
+  const hiddenOnly = document.getElementById('hidden-only');
+  let selectedKey = 'well:17';
+  let status = {};
+
+  function key(scope, row) { return scope + ':' + row.number; }
+  function matches(rules, scope) {
+    return rules.some(rule => (state[scope][rule.parameter] || '') === rule.value);
+  }
+  function ownVisible(node, scope) {
+    return (!node.show.length || matches(node.show, scope)) &&
+      (!node.hide.length || !matches(node.hide, scope));
+  }
+  function conditionText(rules, verb) {
+    if (!rules.length) return 'None';
+    return verb + ' when ' + rules.map(rule => rule.parameter + ' = ' + (rule.value || '(blank)')).join(' OR ');
+  }
+  function describeStatus(section, field, visible, scope) {
+    if (visible) return 'Visible under the current answers.';
+    if (!ownVisible(section, scope)) {
+      if (section.show.length && !matches(section.show, scope)) return 'Parent section is hidden: ' + conditionText(section.show, 'show');
+      return 'Parent section is hidden: ' + conditionText(section.hide, 'hide');
+    }
+    if (field.show.length && !matches(field.show, scope)) return 'Field condition is unmet: ' + conditionText(field.show, 'show');
+    return 'Field is hidden: ' + conditionText(field.hide, 'hide');
+  }
+  function computeStatus() {
+    let result;
+    // The real form clears fields as they become hidden. Repeat evaluation
+    // until those cleared trigger answers can no longer affect another row.
+    for (let pass = 0; pass < 12; pass += 1) {
+      let cleared = false;
+      result = {};
+      for (const scope of scopes) {
+        for (const category of scope.categories) {
+          for (const section of category.subcategories) {
+            const sectionVisible = ownVisible(section, scope.key);
+            for (const field of section.fields) {
+              const visible = sectionVisible && ownVisible(field, scope.key);
+              result[key(scope.key, field)] = {
+                visible: visible, field: field, section: section,
+                category: category.name, scope: scope
+              };
+              if (!visible && controlKeys.has(scope.key + ':' + field.parameter) &&
+                  state[scope.key][field.parameter]) {
+                state[scope.key][field.parameter] = '';
+                cleared = true;
+              }
+            }
+          }
+        }
+      }
+      if (!cleared) break;
+    }
+    return result;
+  }
+  function el(tag, className, textValue) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (textValue !== undefined) node.textContent = textValue;
+    return node;
+  }
+  function badge(textValue, kind) { return el('span', 'badge ' + kind, textValue); }
+  function renderControls() {
+    controlsRoot.replaceChildren();
+    for (const scope of scopes) {
+      const group = model.controls.filter(control => control.scope === scope.key);
+      if (!group.length) continue;
+      const wrapper = el('div', 'control-group');
+      wrapper.appendChild(el('h3', '', scope.label));
+      for (const control of group) {
+        const fieldStatus = status[scope.key + ':' + control.number];
+        const label = el('label', 'control-line' + (fieldStatus.visible ? '' : ' is-hidden'));
+        label.appendChild(el('span', '', String(control.number).padStart(3, '0') + '  ' + control.parameter));
+        let input;
+        if (control.kind === 'select') {
+          input = el('select');
+          const blank = el('option', '', '(Blank)');
+          blank.value = '';
+          input.appendChild(blank);
+          for (const option of control.options) {
+            const item = el('option', '', option);
+            item.value = option;
+            input.appendChild(item);
+          }
+        } else {
+          input = el('input');
+          input.type = 'text';
+          input.placeholder = 'Enter a trigger value';
+        }
+        input.value = state[scope.key][control.parameter] || '';
+        input.disabled = !fieldStatus.visible;
+        input.dataset.scope = scope.key;
+        input.dataset.parameter = control.parameter;
+        input.addEventListener('change', function () {
+          state[scope.key][control.parameter] = input.value;
+          update();
+        });
+        label.appendChild(input);
+        if (!fieldStatus.visible) label.appendChild(el('small', '', 'Hidden in this scenario'));
+        wrapper.appendChild(label);
+      }
+      controlsRoot.appendChild(wrapper);
+    }
+  }
+  function countVisible(fields, scope) {
+    return fields.filter(field => status[key(scope, field)].visible).length;
+  }
+  function addBranch(parent, label, branchKey, count, defaultOpen) {
+    const branch = el('details');
+    branch.dataset.treeKey = branchKey;
+    branch.open = defaultOpen;
+    const summary = el('summary');
+    summary.appendChild(document.createTextNode(label + ' '));
+    summary.appendChild(el('small', '', '(' + count + ' visible)'));
+    branch.appendChild(summary);
+    parent.appendChild(branch);
+    return branch;
+  }
+  function renderTree() {
+    const prior = new Map(Array.from(treeRoot.querySelectorAll('details[data-tree-key]')).map(node => [node.dataset.treeKey, node.open]));
+    treeRoot.replaceChildren();
+    const filtering = !!search.value.trim() || hiddenOnly.checked;
+    const scopeBranches = {};
+    let matchCount = 0;
+    for (const scope of scopes) {
+      const matchingCategories = [];
+      for (const category of scope.categories) {
+        const sections = [];
+        for (const section of category.subcategories) {
+          const fields = section.fields.filter(field => {
+            const query = search.value.trim().toLowerCase();
+            const searched = !query || field.parameter.toLowerCase().includes(query) ||
+              String(field.number).padStart(3, '0').includes(query);
+            return searched && (!hiddenOnly.checked || !status[key(scope.key, field)].visible);
+          });
+          if (fields.length) {
+            sections.push({section: section, fields: fields});
+            matchCount += fields.length;
+          }
+        }
+        if (sections.length) matchingCategories.push({category: category, sections: sections});
+      }
+      const allFields = scope.categories.flatMap(category =>
+        category.subcategories.flatMap(section => section.fields));
+      const scopeKey = scope.key;
+      const parentBranch = scopeKey === 'well' ? treeRoot :
+        scopeKey === 'completion_interval' ? scopeBranches.well : scopeBranches.completion_interval;
+      const scopeBranch = addBranch(parentBranch,
+        scope.label + (scopeKey === 'well' ? '' : ' (one example)'), scopeKey,
+        countVisible(allFields, scopeKey), filtering || (prior.get(scopeKey) ?? scopeKey === 'well'));
+      scopeBranches[scopeKey] = scopeBranch;
+      for (const entry of matchingCategories) {
+        const category = entry.category;
+        const categoryKey = scopeKey + '/' + category.name;
+        const categoryFields = category.subcategories.flatMap(section => section.fields);
+        const categoryBranch = addBranch(scopeBranch, category.name, categoryKey,
+          countVisible(categoryFields, scopeKey),
+          filtering || (prior.get(categoryKey) ?? category.name === 'Well Specific'));
+        for (const sectionEntry of entry.sections) {
+          const section = sectionEntry.section;
+          const sectionKey = categoryKey + '/' + section.name;
+          const sectionBranch = addBranch(categoryBranch, section.name, sectionKey,
+            countVisible(section.fields, scopeKey),
+            filtering || (prior.get(sectionKey) ??
+              ['Failure Confirmation', 'Failure Details & Performance Impact', 'Production Performance History'].includes(section.name)));
+          const list = el('ul', 'field-list');
+          for (const field of sectionEntry.fields) {
+            const fieldKey = key(scopeKey, field);
+            const item = el('li');
+            const button = el('button', 'field-button' +
+              (status[fieldKey].visible ? '' : ' is-hidden') +
+              (selectedKey === fieldKey ? ' selected' : ''));
+            button.type = 'button';
+            button.dataset.scope = scopeKey;
+            button.dataset.row = String(field.number);
+            button.dataset.visible = status[fieldKey].visible ? 'true' : 'false';
+            button.appendChild(el('span', 'field-number', String(field.number).padStart(3, '0')));
+            button.appendChild(el('span', 'field-name', field.parameter +
+              (field.unit ? ' (' + field.unit + ')' : '')));
+            button.appendChild(badge(status[fieldKey].visible ? 'Visible' : 'Hidden',
+              status[fieldKey].visible ? 'shown' : 'hidden'));
+            if (field.required) button.appendChild(badge('Required', 'required'));
+            if (field.required && !status[fieldKey].visible) button.appendChild(badge('API mismatch', 'api'));
+            button.addEventListener('click', function () {
+              selectedKey = fieldKey;
+              treeRoot.querySelectorAll('.field-button.selected').forEach(node => node.classList.remove('selected'));
+              button.classList.add('selected');
+              renderDetails();
+            });
+            item.appendChild(button);
+            list.appendChild(item);
+          }
+          sectionBranch.appendChild(list);
+        }
+      }
+    }
+    if (!matchCount) treeRoot.replaceChildren(el('p', 'note', 'No questions match this filter.'));
+  }
+  function renderCounts() {
+    const all = Object.values(status);
+    const visible = all.filter(item => item.visible).length;
+    const hiddenRequired = all.filter(item => !item.visible && item.field.required).length;
+    const counts = [
+      el('span', '', String(all.length) + ' questions'),
+      el('span', '', String(visible) + ' visible'),
+      el('span', '', String(all.length - visible) + ' hidden'),
+      el('span', 'warning', String(hiddenRequired) + ' hidden but required by current API')
+    ];
+    countsRoot.replaceChildren(...counts);
+  }
+  function addDetailPair(list, label, value, code) {
+    list.appendChild(el('dt', '', label));
+    const item = el('dd');
+    item.appendChild(el(code ? 'code' : 'span', '', value));
+    list.appendChild(item);
+  }
+  function renderDetails() {
+    const item = status[selectedKey];
+    if (!item) {
+      detailsRoot.textContent = 'Select a numbered question in the tree.';
+      return;
+    }
+    const field = item.field;
+    const list = el('dl', 'detail-grid');
+    addDetailPair(list, 'Question', String(field.number).padStart(3, '0') + '  ' + field.parameter);
+    addDetailPair(list, 'Path', item.scope.label + ' → ' + item.category + ' → ' + item.section.name);
+    addDetailPair(list, 'Now', describeStatus(item.section, field, item.visible, item.scope.key));
+    addDetailPair(list, 'Section rule', [
+      conditionText(item.section.show, 'Show'),
+      conditionText(item.section.hide, 'Hide')
+    ].filter(text => text !== 'None').join('; ') || 'Always visible');
+    addDetailPair(list, 'Question rule', [
+      conditionText(field.show, 'Show'),
+      conditionText(field.hide, 'Hide')
+    ].filter(text => text !== 'None').join('; ') || 'No additional condition');
+    addDetailPair(list, 'Browser', field.required ?
+      'Required when visible; hidden controls are disabled.' : 'Optional.');
+    addDetailPair(list, 'Current API', field.required ?
+      'Required in every submitted record, even when hidden in the form.' : 'Optional.');
+    addDetailPair(list, 'JSON path',
+      (item.scope.key === 'well' ? 'well' : item.scope.key === 'completion_interval' ?
+        'completion_intervals[0].fields' : 'completion_intervals[0].sand_bodies[0]') +
+      '[' + JSON.stringify(item.category) + '][' + JSON.stringify(item.section.name) +
+      '][' + JSON.stringify(field.parameter) + ']', true);
+    detailsRoot.classList.remove('detail-empty');
+    detailsRoot.replaceChildren(list);
+  }
+  function update() {
+    status = computeStatus();
+    renderControls();
+    renderCounts();
+    renderTree();
+    renderDetails();
+  }
+  search.addEventListener('input', renderTree);
+  hiddenOnly.addEventListener('change', renderTree);
+  document.getElementById('expand-all').addEventListener('click', function () {
+    treeRoot.querySelectorAll('details').forEach(node => { node.open = true; });
+  });
+  document.getElementById('collapse-all').addEventListener('click', function () {
+    treeRoot.querySelectorAll('details').forEach(node => { node.open = false; });
+  });
+  update();
+}());
+</script>
+</body>
+</html>

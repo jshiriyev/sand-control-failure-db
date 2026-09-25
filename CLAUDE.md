@@ -30,6 +30,11 @@ architecture" below).
   standalone, no-backend, client-side HTML intake form.
 - `form/sand_control_form.html` -- generated output (regenerate after any dictionary
   edit; do not hand-edit).
+- `docs/generate_form_logic_tree.py` and `docs/form_logic_tree_template.html` --
+  generate a read-only, standalone logic explorer from the same workbook and
+  form visibility model; `docs/form_logic_tree.html` is the generated output.
+  The explorer shows the current rules and the existing browser/API requiredness
+  mismatch; it does not implement proposed form changes.
 - `db/` -- SQLAlchemy schema, the dictionary-driven codegen pipeline, and Alembic
   migrations. See "Database & API architecture" below.
 - `backend/` -- the FastAPI app: org-token auth, submit/fetch endpoints.

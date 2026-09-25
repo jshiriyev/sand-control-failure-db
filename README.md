@@ -26,6 +26,7 @@ credentials. See "What never belongs in this repo" below.
 MASTER.xlsx            the data dictionary -- shared input to both form/ and db/
 dictionary/             shared parser for MASTER.xlsx (used by form/ and db/)
 form/                   generates the standalone HTML intake form
+docs/                   generated, interactive form logic explorer
 db/                     SQLAlchemy schema, dictionary-driven codegen, Alembic migrations
 backend/                FastAPI app (org-token auth, submit/fetch records)
 tests/                  pytest suite (dictionary, db, migrations, api)
@@ -34,6 +35,21 @@ docker-compose.yml      local Postgres + backend, from zero on any machine
 ```
 
 See [CLAUDE.md](CLAUDE.md) for the full data model and architecture.
+
+## Explore the form logic
+
+Open [the interactive logic tree](docs/form_logic_tree.html) in a browser to
+inspect the current workbook hierarchy and conditional visibility. Choose
+Well type, Sand failure, Sand rate quantification, and other controlling
+answers to see which rows appear. Hidden rows stay listed, and the tree
+flags fields that the current API requires even when the browser hides them.
+This is a read-only explanation tool; it does not enter or submit well data.
+
+Regenerate it after changing the workbook:
+
+```
+python docs/generate_form_logic_tree.py
+```
 
 ## Quickstart (Docker)
 
@@ -86,15 +102,16 @@ uvicorn backend.app.main:app --reload
 ```
 python -m db.codegen              # regenerates db/generated/*.py + field_registry.json
 python form/generate_form.py      # regenerates form/sand_control_form.html
+python docs/generate_form_logic_tree.py  # regenerates docs/form_logic_tree.html
 cd db && alembic revision --autogenerate -m "describe the change"
 # review the generated migration by hand, then:
 alembic upgrade head
 ```
 
 Commit the `MASTER.xlsx` diff, the regenerated `db/generated/*` files, the
-regenerated `form/sand_control_form.html`, and the new migration file
-together. CI re-runs the two regeneration commands and fails the build if
-the committed output doesn't match (the "codegen drift check") -- so a
+regenerated `form/sand_control_form.html`, `docs/form_logic_tree.html`, and
+the new migration file together. CI reruns the regeneration commands and
+fails if the committed output differs (the "codegen drift check") -- so a
 dictionary edit that wasn't followed by regenerating fails in CI even if
 it's forgotten locally.
 

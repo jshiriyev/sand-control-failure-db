@@ -36,11 +36,12 @@ jobs:
       - name: Install project (+ dev extras)
         run: pip install -e ".[dev]"
 
-      - name: Codegen drift check (MASTER.xlsx -> db/generated + form)
+      - name: Codegen drift check (MASTER.xlsx -> db/generated + form + logic tree)
         run: |
           python -m db.codegen
           python form/generate_form.py
-          git diff --exit-code -- db/generated form/sand_control_form.html
+          python docs/generate_form_logic_tree.py
+          git diff --exit-code -- db/generated form/sand_control_form.html docs/form_logic_tree.html
 
       - name: Lint
         run: ruff check .
